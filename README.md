@@ -1,7 +1,7 @@
 # PermGuard Negotiated Object Transfer Protocol
 
 [![Documentation](https://img.shields.io/website?label=Docs&url=https%3A%2F%2Fwww.permguard.com%2F)](https://www.permguard.com/)
-[![Build, test and publish the artifacts](https://github.com/permguard/permguard-notp-protocol/actions/workflows/permguard-abs-language-ci.yml/badge.svg)](https://github.com/permguard/permguard-notp-protocol/actions/workflows/permguard-abs-language-ci.yml)
+[![Build, test and publish the artifacts](https://github.com/permguard/permguard-notp-protocol/actions/workflows/permguard-notp-protocol-ci.yml/badge.svg)](https://github.com/permguard/permguard-notp-protocol/actions/workflows/permguard-notp-protocol-ci.yml)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-notp-protocol&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-notp-protocol)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-notp-protocol&metric=bugs)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-notp-protocol)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-notp-protocol&metric=coverage)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-notp-protocol)
