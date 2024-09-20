@@ -27,17 +27,17 @@ import (
 
 // stateMachinesInfo represents the state machines and their respective packet logs.
 type stateMachinesInfo struct {
-	follower        *StateMachine
-	followerSent    []notppackets.Packet
+	follower         *StateMachine
+	followerSent     []notppackets.Packet
 	followerReceived []notppackets.Packet
 
-	leader          *StateMachine
-	leaderSent      []notppackets.Packet
-	leaderReceived  []notppackets.Packet
+	leader         *StateMachine
+	leaderSent     []notppackets.Packet
+	leaderReceived []notppackets.Packet
 }
 
 // buildCommitStateMachines initializes and returns the follower and leader state machines.
-func buildCommitStateMachines(assert *assert.Assertions, operationType OperationType, converter notppackets.PacketConverterHandler, followerHandler DecisionHandler, leaderHandler DecisionHandler) *stateMachinesInfo {
+func buildCommitStateMachines(assert *assert.Assertions, operationType OperationType, converter notppackets.PacketConverterHandler, followerHandler PacketableHandler, leaderHandler PacketableHandler) *stateMachinesInfo {
 	sMInfo := &stateMachinesInfo{
 		followerSent:     []notppackets.Packet{},
 		followerReceived: []notppackets.Packet{},

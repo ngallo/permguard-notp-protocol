@@ -24,28 +24,28 @@ import (
 )
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
-func NewLeaderStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-    if operation == "" {
-        operation = DefaultOperation
-    }
-    stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, converter, decisionHandler, transportLayer)
-    if err != nil {
-        return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
-    }
-    return stateMachine, nil
+func NewLeaderStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	if operation == "" {
+		operation = DefaultOperation
+	}
+	stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, converter, packetableHandler, transportLayer)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
+	}
+	return stateMachine, nil
 }
 
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, LeaderExchangeState, nil
+	return false, LeaderExchangeState, nil
 }
 
 // LeaderNegotiateState manages the negotiation phase in the protocol.
 func LeaderNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, LeaderExchangeState, nil
+	return false, LeaderExchangeState, nil
 }
 
 // LeaderExchangeState governs the exchange phase in the protocol.
 func LeaderExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FinalState, nil
+	return false, FinalState, nil
 }

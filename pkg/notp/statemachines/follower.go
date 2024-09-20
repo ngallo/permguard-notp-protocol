@@ -24,29 +24,29 @@ import (
 )
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
-func NewFollowerStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-    if operation == "" {
-        operation = DefaultOperation
-    }
-    stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, converter, decisionHandler, transportLayer)
-    if err != nil {
-        return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
-    }
-    return stateMachine, nil
+func NewFollowerStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	if operation == "" {
+		operation = DefaultOperation
+	}
+	stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, converter, packetableHandler, transportLayer)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
+	}
+	return stateMachine, nil
 }
 
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FollowerExchangeState, nil
+	runtime.HandlePacketable()
+	return false, FollowerExchangeState, nil
 }
 
 // FollowerNegotiateState manages the negotiation phase in the protocol.
 func FollowerNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FollowerExchangeState, nil
+	return false, FollowerExchangeState, nil
 }
 
 // FollowerExchangeState governs the exchange phase in the protocol.
 func FollowerExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FinalState, nil
+	return false, FinalState, nil
 }
-

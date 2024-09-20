@@ -24,8 +24,8 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-// DecisionHandler defines a function type for handling packet dections.
-type DecisionHandler func(*notppackets.Packetable) (*notppackets.Packetable, error)
+// PacketableHandler defines a function type for handling packet.
+type PacketableHandler func(*notppackets.Packetable) (*notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
@@ -42,11 +42,11 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	operation 		OperationType
-	transportLayer 	*notptransport.TransportLayer
-	initialState   	StateTransitionFunc
-	packetConverter notppackets.PacketConverterHandler
-	decisionHandler DecisionHandler
+	operation         OperationType
+	transportLayer    *notptransport.TransportLayer
+	initialState      StateTransitionFunc
+	packetConverter   notppackets.PacketConverterHandler
+	packetableHandler PacketableHandler
 }
 
 // GetOperation returns the operation type of the state machine.
@@ -64,9 +64,9 @@ func (t *StateMachineRuntimeContext) ReceivePacket() (*notppackets.Packet, error
 	return t.transportLayer.ReceivePacket()
 }
 
-// HandleDecition handles the decision of the state machine.
-func (t *StateMachineRuntimeContext) HandleDecition(*notppackets.Packetable) (*notppackets.Packetable, error) {
-	return t.decisionHandler(nil)
+// HandlePacketable handles the packet for the state machine.
+func (t *StateMachineRuntimeContext) HandlePacketable(*notppackets.Packetable) (*notppackets.Packetable, error) {
+	return t.packetableHandler(nil)
 }
 
 // StateMachine orchestrates the execution of state transitions.
@@ -91,11 +91,11 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(operation OperationType, initialState StateTransitionFunc, converter notppackets.PacketConverterHandler, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(operation OperationType, initialState StateTransitionFunc, converter notppackets.PacketConverterHandler, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
-	if decisionHandler == nil {
+	if packetableHandler == nil {
 		return nil, errors.New("notp: decision handler cannot be nil")
 	}
 	if transportLayer == nil {
@@ -106,11 +106,11 @@ func NewStateMachine(operation OperationType, initialState StateTransitionFunc, 
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
-			operation: operation,
-			transportLayer: transportLayer,
-			initialState:   initialState,
-			packetConverter: converter,
-			decisionHandler: decisionHandler,
+			operation:         operation,
+			transportLayer:    transportLayer,
+			initialState:      initialState,
+			packetConverter:   converter,
+			packetableHandler: packetableHandler,
 		},
 	}, nil
 }
