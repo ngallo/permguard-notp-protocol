@@ -25,7 +25,7 @@ import (
 )
 
 // DecisionHandler defines a function type for handling packet dections.
-type DecisionHandler func(*notppackets.Packet) (*notppackets.Packet, error)
+type DecisionHandler func(*notppackets.Packetable) (*notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
@@ -65,7 +65,7 @@ func (t *StateMachineRuntimeContext) ReceivePacket() (*notppackets.Packet, error
 }
 
 // HandleDecition handles the decision of the state machine.
-func (t *StateMachineRuntimeContext) HandleDecition(*notppackets.Packet) (*notppackets.Packet, error) {
+func (t *StateMachineRuntimeContext) HandleDecition(*notppackets.Packetable) (*notppackets.Packetable, error) {
 	return t.decisionHandler(nil)
 }
 
