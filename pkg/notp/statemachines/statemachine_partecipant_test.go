@@ -102,4 +102,9 @@ func TestPullProtocolExecution(t *testing.T) {
 
 	err = sMInfo.leader.Run()
 	assert.Nil(err, "Failed to run the leader state machine")
+
+	assert.Len(sMInfo.followerSent, 0, "Follower sent packets")
+	assert.Len(sMInfo.followerReceived, 0, "Follower received packets")
+	assert.Len(sMInfo.leaderSent, 0, "Leader sent packets")
+	assert.Len(sMInfo.leaderReceived, 0, "Leader received packets")
 }

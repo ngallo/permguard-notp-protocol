@@ -17,39 +17,21 @@
 
 package statemachines
 
-import (
-	"bytes"
-
-	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
-)
-
 // OperationType represents the type of operation that the NOTP protocol is performing.
 type OperationType string
 
 const (
+	// AdvertisementPacketType represents the type of the advertisement packet.
+	AdvertisementPacketType = int32(1)
+	// NegotiationPacketType represents the type of the negotiation packet.
+	NegotiationPacketType = int32(2)
+	// ExchangePacketType represents the type of the exchange packet.
+	ExchangePacketType 	= int32(3)
+
+	// PushOperation represents the push operation type.
     PushOperation    OperationType = "push"
+	// PullOperation represents the pull operation type.
     PullOperation    OperationType = "pull"
+	// DefaultOperation represents the default operation type.
     DefaultOperation OperationType = PushOperation
 )
-
-// CommitPacket represents a reference object packet.
-type CommitPacket struct {
-	notppackets.Packet
-}
-
-// GetType returns the type of the packet.
-func (p *CommitPacket) GetType() int32 {
-	return 0
-}
-
-// Serialize serializes the packet.
-func (p *CommitPacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	return buffer.Bytes(), nil
-}
-
-// Deserialize deserializes the packet.
-func (p *CommitPacket) Deserialize(data []byte) error {
-	// buffer := bytes.NewBuffer(data)
-	return nil
-}
