@@ -19,6 +19,7 @@ package statemachines
 import (
 	"fmt"
 
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
@@ -46,13 +47,11 @@ func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateT
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive packet: %w", err)
 	}
-	advPacket := notpsmpackets.AdvertisementPacket{ }
-	data, err := received.Serialize()
+	var advPacket notpsmpackets.AdvertisementPacket
+	err = notppackets.ConvertPacketable(received, &advPacket)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to serialize packet: %w", err)
+		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}
-	advPacket.Deserialize(data)
-	print(received.GetType())
 	return false, LeaderNegotiateState, nil
 }
 

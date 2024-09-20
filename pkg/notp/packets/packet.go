@@ -16,6 +16,8 @@
 
 package packets
 
+import "fmt"
+
 const (
 	// ProtocolPacketType represents the type of the generic packet.
 	PacketType = uint32(0)
@@ -49,6 +51,19 @@ type Packetable interface {
 	GetType() uint64
 	Serialize() ([]byte, error)
 	Deserialize([]byte) error
+}
+
+// ConvertPacketable converts a packetable to a new instance of the input type.
+func ConvertPacketable(packet Packetable, target Packetable) error {
+	data, err := packet.Serialize()
+	if err != nil {
+		return fmt.Errorf("notp: failed to serialize packet: %w", err)
+	}
+	err = target.Deserialize(data)
+	if err != nil {
+		return fmt.Errorf("notp: failed to deserialize packet: %w", err)
+	}
+	return nil
 }
 
 // CombineUint32toUint64 combina due uint32 in un singolo uint64.
