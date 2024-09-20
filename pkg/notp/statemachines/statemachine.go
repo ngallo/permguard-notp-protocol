@@ -41,9 +41,15 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	transportLayer *notptransport.TransportLayer
-	initialState   StateTransitionFunc
+	operation 		OperationType
+	transportLayer 	*notptransport.TransportLayer
+	initialState   	StateTransitionFunc
 	decisionHandler DecisionHandler
+}
+
+// GetOperation returns the operation type of the state machine.
+func (t *StateMachineRuntimeContext) GetOperation() OperationType {
+	return t.operation
 }
 
 // TransmitPacket sends a packet through the transport layer.
@@ -54,6 +60,11 @@ func (t *StateMachineRuntimeContext) TransmitPacket(packet *notppackets.Packet) 
 // ReceivePacket retrieves a packet from the transport layer.
 func (t *StateMachineRuntimeContext) ReceivePacket() (*notppackets.Packet, error) {
 	return t.transportLayer.ReceivePacket()
+}
+
+// HandleDecition handles the decision of the state machine.
+func (t *StateMachineRuntimeContext) HandleDecition(*notppackets.Packet) (*notppackets.Packet, error) {
+	return t.decisionHandler(nil)
 }
 
 // StateMachine orchestrates the execution of state transitions.
@@ -78,7 +89,7 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(initialState StateTransitionFunc, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(operation OperationType, initialState StateTransitionFunc, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
@@ -90,6 +101,7 @@ func NewStateMachine(initialState StateTransitionFunc, decisionHandler DecisionH
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
+			operation: operation,
 			transportLayer: transportLayer,
 			initialState:   initialState,
 			decisionHandler: decisionHandler,

@@ -22,44 +22,29 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-// NewLeaderStateMachine initializes and returns a new leader state machine for the specified operation.
+// NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
 func NewLeaderStateMachine(operation OperationType, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-    var initialState StateTransitionFunc
     if operation == "" {
         operation = DefaultOperation
     }
-    switch operation {
-    case PushOperation:
-        initialState = LeaderAdvertiseRequiredObjectsState
-    case PullOperation:
-        initialState = LeaderAdvertiseLatestObjectsState
-    default:
-        return nil, fmt.Errorf("notp: invalid operation: %s", operation)
-    }
-
-    stateMachine, err := NewStateMachine(initialState, decisionHandler, transportLayer)
+    stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, decisionHandler, transportLayer)
     if err != nil {
         return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
     }
     return stateMachine, nil
 }
 
-// LeaderAdvertiseRequiredObjectsState advertises the required objects to the leader.
-func LeaderAdvertiseRequiredObjectsState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, LeaderNegotiatingState, nil
+// LeaderAdvertiseState handles the advertisement phase in the protocol.
+func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+    return false, LeaderExchangeState, nil
 }
 
-// LeaderAdvertiseLatestObjectsState advertises the latest objects to the leader.
-func LeaderAdvertiseLatestObjectsState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, LeaderNegotiatingState, nil
+// LeaderNegotiateState manages the negotiation phase in the protocol.
+func LeaderNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+    return false, LeaderExchangeState, nil
 }
 
-// LeaderNegotiatingState manages the negotiation phase between the leader and the leader.
-func LeaderNegotiatingState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, LeaderObjectExchangeState, nil
-}
-
-// LeaderObjectExchangeState manages the object exchange phase between the leader and the leader.
-func LeaderObjectExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+// LeaderExchangeState governs the exchange phase in the protocol.
+func LeaderExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
     return false, FinalState, nil
 }

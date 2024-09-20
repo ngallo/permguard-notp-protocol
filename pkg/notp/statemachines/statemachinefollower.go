@@ -22,44 +22,30 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-// NewFollowerStateMachine initializes and returns a new follower state machine for the specified operation.
+// NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
 func NewFollowerStateMachine(operation OperationType, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-    var initialState StateTransitionFunc
     if operation == "" {
         operation = DefaultOperation
     }
-    switch operation {
-    case PushOperation:
-        initialState = FollowerAdvertiseRequiredObjectsState
-    case PullOperation:
-        initialState = FollowerAdvertiseLatestObjectsState
-    default:
-        return nil, fmt.Errorf("notp: invalid operation: %s", operation)
-    }
-
-    stateMachine, err := NewStateMachine(initialState, decisionHandler, transportLayer)
+    stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, decisionHandler, transportLayer)
     if err != nil {
         return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
     }
     return stateMachine, nil
 }
 
-// FollowerAdvertiseRequiredObjectsState advertises the required objects to the leader.
-func FollowerAdvertiseRequiredObjectsState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FollowerNegotiatingState, nil
+// FollowerAdvertiseState handles the advertisement phase in the protocol.
+func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+    return false, FollowerExchangeState, nil
 }
 
-// FollowerAdvertiseLatestObjectsState advertises the latest objects to the leader.
-func FollowerAdvertiseLatestObjectsState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FollowerNegotiatingState, nil
+// FollowerNegotiateState manages the negotiation phase in the protocol.
+func FollowerNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+    return false, FollowerExchangeState, nil
 }
 
-// FollowerNegotiatingState manages the negotiation phase between the follower and the leader.
-func FollowerNegotiatingState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-    return false, FollowerObjectExchangeState, nil
-}
-
-// FollowerObjectExchangeState manages the object exchange phase between the follower and the leader.
-func FollowerObjectExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+// FollowerExchangeState governs the exchange phase in the protocol.
+func FollowerExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
     return false, FinalState, nil
 }
+
