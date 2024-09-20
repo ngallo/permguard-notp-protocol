@@ -18,9 +18,9 @@ package packets
 
 const (
 	// AdvertisementPacketType represents the type of the advertisement packet.
-	AdvertisementPacketType = uint32(1)
+	AdvertisementPacketType = uint32(10)
 	// NegotiationPacketType represents the type of the negotiation packet.
-	NegotiationPacketType = uint32(2)
+	NegotiationPacketType = uint32(11)
 	// ExchangePacketType represents the type of the exchange packet.
-	ExchangePacketType 	= uint32(3)
+	ExchangePacketType 	= uint32(12)
 )
