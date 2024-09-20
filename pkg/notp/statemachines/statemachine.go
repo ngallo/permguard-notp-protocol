@@ -20,7 +20,6 @@ import (
 	"errors"
 
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
-	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -45,7 +44,6 @@ type StateMachineRuntimeContext struct {
 	operation         OperationType
 	transportLayer    *notptransport.TransportLayer
 	initialState      StateTransitionFunc
-	packetConverter   notppackets.PacketConverterHandler
 	packetableHandler PacketableHandler
 }
 
@@ -91,7 +89,7 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(operation OperationType, initialState StateTransitionFunc, converter notppackets.PacketConverterHandler, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(operation OperationType, initialState StateTransitionFunc, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
@@ -101,15 +99,11 @@ func NewStateMachine(operation OperationType, initialState StateTransitionFunc, 
 	if transportLayer == nil {
 		return nil, errors.New("notp: transport layer cannot be nil")
 	}
-	if converter == nil {
-		converter = notpsmpackets.PacketConverter
-	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
 			operation:         operation,
 			transportLayer:    transportLayer,
 			initialState:      initialState,
-			packetConverter:   converter,
 			packetableHandler: packetableHandler,
 		},
 	}, nil
