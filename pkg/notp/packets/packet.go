@@ -16,9 +16,32 @@
 
 package packets
 
+const (
+	// ProtocolPacketType represents the type of the generic packet.
+	PacketType = uint32(0)
+	// ProtocolPacketType represents the type of the protocol packet.
+	ProtocolPacketType = uint32(1)
+)
+
 // Packet represents a packet.
 type Packet struct {
 	Data []byte
+}
+
+// GetType returns the packet type.
+func (p *Packet) GetType() uint64 {
+	return CombineUint32toUint64(PacketType, 0)
+}
+
+// Serialize serializes the packet.
+func (p *Packet) Serialize() ([]byte, error) {
+	return p.Data, nil
+}
+
+// Deserialize deserializes the packet.
+func (p *Packet) Deserialize(data []byte) error {
+	p.Data = data
+	return nil
 }
 
 // Packetable represents a packet that can be serialized and deserialized.

@@ -23,11 +23,11 @@ import (
 )
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
-func NewLeaderStateMachine(operation OperationType, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if operation == "" {
 		operation = DefaultOperation
 	}
-	stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, packetableHandler, transportLayer)
+	stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
 	}

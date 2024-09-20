@@ -28,7 +28,7 @@ type ProtocolPacket struct {
 
 // GetType returns the type of the packet.
 func (p *ProtocolPacket) GetType() uint64 {
-	return 1
+	return CombineUint32toUint64(ProtocolPacketType, 0)
 }
 
 // Serialize serializes the packet.

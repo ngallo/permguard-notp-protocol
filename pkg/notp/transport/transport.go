@@ -31,25 +31,34 @@ type TransportLayer struct {
 }
 
 // TransmitPacket sends a packet through the transport layer.
-func (t *TransportLayer) TransmitPacket(packet *notppackets.Packet) error {
+func (t *TransportLayer) TransmitPacket(packetables []notppackets.Packetable) error {
 	if t.packetSender == nil {
 		return errors.New("notp: transport layer does not have a defined packet sender")
 	}
-	if packet == nil {
-		return errors.New("notp: cannot transmit a nil packet")
+	if len(packetables) == 0 {
+		return errors.New("notp: cannot send an empty packet")
 	}
-	err := t.packetSender(packet)
+	packet := notppackets.Packet{}
+	writer, err := notppackets.NewPacketWriter(&packet)
+	if err != nil {
+		return err
+	}
+	writer.WriteProtocol(&notppackets.ProtocolPacket{ Version: 1 })
+	for _, packetable := range packetables {
+		writer.AppendDataPacket(packetable)
+	}
+	err = t.packetSender(&packet)
 	if err != nil {
 		return err
 	}
 	if t.inspector != nil {
-		t.inspector.InspectSent(packet)
+		t.inspector.InspectSent(&packet)
 	}
 	return nil
 }
 
 // ReceivePacket retrieves a packet from the transport layer.
-func (t *TransportLayer) ReceivePacket() (*notppackets.Packet, error) {
+func (t *TransportLayer) ReceivePacket() ([]notppackets.Packetable, error) {
 	if t.packetReceiver == nil {
 		return nil, errors.New("notp: transport layer does not have a defined packet receiver")
 	}
@@ -63,7 +72,32 @@ func (t *TransportLayer) ReceivePacket() (*notppackets.Packet, error) {
 	if t.inspector != nil {
 		t.inspector.InspectReceived(packet)
 	}
-	return packet, nil
+	reader, err := notppackets.NewPacketReader(packet)
+	if err != nil {
+		return nil, err
+	}
+	protocol, err := reader.ReadProtocol()
+	if err != nil {
+		return nil, err
+	}
+	if protocol.Version != 1 {
+		return nil, errors.New("notp: unsupported protocol version")
+	}
+	packetables := []notppackets.Packetable{}
+	for {
+		data, state, err := reader.ReadNextDataPacket(nil)
+		if err != nil {
+			return nil, err
+		}
+		packetable := &notppackets.Packet{
+			Data: data,
+		}
+		packetables = append(packetables, packetable)
+		if state.IsComplete() {
+			break
+		}
+	}
+	return packetables, nil
 }
 
 // NewTransportLayer creates and initializes a new transport layer.

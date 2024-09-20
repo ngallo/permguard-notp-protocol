@@ -1,4 +1,3 @@
-
 // Copyright 2024 Nitro Agility S.r.l.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,14 +16,14 @@
 
 package statemachines
 
-// OperationType represents the type of operation that the NOTP protocol is performing.
-type OperationType string
+// StateMachineType represents the type of operation that the NOTP protocol is performing.
+type StateMachineType string
 
 const (
-	// PushOperation represents the push operation type.
-    PushOperation    OperationType = "push"
-	// PullOperation represents the pull operation type.
-    PullOperation    OperationType = "pull"
+	// PushStateMachineType represents the push state machine type.
+	PushStateMachineType StateMachineType = "push"
+	// PullStateMachineType represents the pull state machine type.
+	PullStateMachineType StateMachineType = "pull"
 	// DefaultOperation represents the default operation type.
-    DefaultOperation OperationType = PushOperation
+	DefaultOperation StateMachineType = PushStateMachineType
 )

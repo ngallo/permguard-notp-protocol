@@ -23,8 +23,38 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-// PacketableHandler defines a function type for handling packet.
-type PacketableHandler func(*notppackets.Packetable) (*notppackets.Packetable, error)
+// HandlerContext holds the context of the handler.
+type HandlerContext struct {
+	stateMachineType StateMachineType
+	isLeader 	   	 bool
+	operationType	 string
+}
+
+// NewHandlerContext creates and initializes a new handler context.
+func NewHandlerContext(stateMachineType StateMachineType, isLeader bool, operationType string) (*HandlerContext, error) {
+	return &HandlerContext{
+		stateMachineType: stateMachineType,
+		operationType:    operationType,
+	}, nil
+}
+
+// GetStateMachineType returns the state machine type of the handler.
+func (h *HandlerContext) GetStateMachineType() StateMachineType {
+	return h.stateMachineType
+}
+
+// IsLeader returns whether the handler is a leader.
+func (h *HandlerContext) IsLeader() bool {
+	return h.isLeader
+}
+
+// GetOperationType returns the operation type of the handler.
+func (h *HandlerContext) GetOperationType() string {
+	return h.operationType
+}
+
+// HostHandler defines a function type for handling packet.
+type HostHandler func(*HandlerContext, []notppackets.Packetable) ([]notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
@@ -41,30 +71,40 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	operation         OperationType
-	transportLayer    *notptransport.TransportLayer
-	initialState      StateTransitionFunc
-	packetableHandler PacketableHandler
+	operation      StateMachineType
+	transportLayer *notptransport.TransportLayer
+	initialState   StateTransitionFunc
+	hostHandler    HostHandler
 }
 
 // GetOperation returns the operation type of the state machine.
-func (t *StateMachineRuntimeContext) GetOperation() OperationType {
+func (t *StateMachineRuntimeContext) GetOperation() StateMachineType {
 	return t.operation
 }
 
-// TransmitPacket sends a packet through the transport layer.
-func (t *StateMachineRuntimeContext) TransmitPacket(packet *notppackets.Packet) error {
-	return t.transportLayer.TransmitPacket(packet)
+// Send sends a packet through the transport layer.
+func (t *StateMachineRuntimeContext) Send(packetable notppackets.Packetable) error {
+	return t.SendStream([]notppackets.Packetable{packetable})
 }
 
-// ReceivePacket retrieves a packet from the transport layer.
-func (t *StateMachineRuntimeContext) ReceivePacket() (*notppackets.Packet, error) {
+// SendStream sends a packets through the transport layer.
+func (t *StateMachineRuntimeContext) SendStream(packetables []notppackets.Packetable) error {
+	return t.transportLayer.TransmitPacket(packetables)
+}
+
+// Receive retrieves packets from the transport layer.
+func (t *StateMachineRuntimeContext) Receive() ([]notppackets.Packetable, error) {
 	return t.transportLayer.ReceivePacket()
 }
 
-// HandlePacketable handles the packet for the state machine.
-func (t *StateMachineRuntimeContext) HandlePacketable(*notppackets.Packetable) (*notppackets.Packetable, error) {
-	return t.packetableHandler(nil)
+// Handle handles the packet for the state machine.
+func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, packetable notppackets.Packetable) ([]notppackets.Packetable, error) {
+	return t.HandleStream(handlerCtx, []notppackets.Packetable{packetable})
+}
+
+// HandleStream handles a packet stream for the state machine.
+func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, packetables []notppackets.Packetable) ([]notppackets.Packetable, error) {
+	return t.hostHandler(handlerCtx, packetables)
 }
 
 // StateMachine orchestrates the execution of state transitions.
@@ -89,11 +129,11 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(operation OperationType, initialState StateTransitionFunc, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(operation StateMachineType, initialState StateTransitionFunc, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
-	if packetableHandler == nil {
+	if hostHandler == nil {
 		return nil, errors.New("notp: decision handler cannot be nil")
 	}
 	if transportLayer == nil {
@@ -101,10 +141,10 @@ func NewStateMachine(operation OperationType, initialState StateTransitionFunc, 
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
-			operation:         operation,
-			transportLayer:    transportLayer,
-			initialState:      initialState,
-			packetableHandler: packetableHandler,
+			operation:      operation,
+			transportLayer: transportLayer,
+			initialState:   initialState,
+			hostHandler:    hostHandler,
 		},
 	}, nil
 }

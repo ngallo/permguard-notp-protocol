@@ -19,27 +19,53 @@ package statemachines
 import (
 	"fmt"
 
+	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
+const (
+	// FollowerRequestLatestInfo represents the request latest info operation.
+	FollowerRequestLatestInfo = "request-latest-info"
+)
+
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
-func NewFollowerStateMachine(operation OperationType, packetableHandler PacketableHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if operation == "" {
 		operation = DefaultOperation
 	}
-	stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, packetableHandler, transportLayer)
+	stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
 	}
 	return stateMachine, nil
 }
 
+// followerPullAdvertiseState handles the pull advertisement phase in the protocol.
+func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	handlerCtx, err := NewHandlerContext(runtime.GetOperation(), false, FollowerRequestLatestInfo)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to create handler context: %w", err)
+	}
+	advPacket := notpsmpackets.AdvertisementPacket{}
+	packetable, err := runtime.Handle(handlerCtx, &advPacket)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to handle advertisement packet: %w", err)
+	}
+	runtime.SendStream(packetable)
+	return false, FollowerNegotiateState, nil
+}
+
+// followerPushAdvertiseState handles the push advertisement phase in the protocol.
+func followerPushAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	return false, FollowerNegotiateState, nil
+}
+
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	if runtime.GetOperation() == PullOperation {
-		return false, FollowerNegotiateState, nil
-	} else if runtime.GetOperation() == PushOperation {
-		return false, FollowerExchangeState, nil
+	if runtime.GetOperation() == PullStateMachineType {
+		return followerPullAdvertiseState(runtime)
+	} else if runtime.GetOperation() == PushStateMachineType {
+		return followerPushAdvertiseState(runtime)
 	}
 	return false, nil, fmt.Errorf("notp: invalid operation type: %s", runtime.GetOperation())
 }

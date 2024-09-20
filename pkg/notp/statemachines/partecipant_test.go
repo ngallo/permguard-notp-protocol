@@ -37,7 +37,7 @@ type stateMachinesInfo struct {
 }
 
 // buildCommitStateMachines initializes and returns the follower and leader state machines.
-func buildCommitStateMachines(assert *assert.Assertions, operationType OperationType, followerHandler PacketableHandler, leaderHandler PacketableHandler) *stateMachinesInfo {
+func buildCommitStateMachines(assert *assert.Assertions, operationType StateMachineType, followerHandler HostHandler, leaderHandler HostHandler) *stateMachinesInfo {
 	sMInfo := &stateMachinesInfo{
 		followerSent:     []notppackets.Packet{},
 		followerReceived: []notppackets.Packet{},
@@ -88,14 +88,14 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType Operation
 // TestPullProtocolExecution verifies the state machine execution for both follower and leader in the context of a pull operation.
 func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
-
-	followerHandler := func(packet *notppackets.Packetable) (*notppackets.Packetable, error) {
+	
+	followerHandler := func(handlerCtx *HandlerContext, packet []notppackets.Packetable) ([]notppackets.Packetable, error) {
 		return packet, nil
 	}
-	leaderHandler := func(packet *notppackets.Packetable) (*notppackets.Packetable, error) {
+	leaderHandler := func(handlerCtx *HandlerContext, packet []notppackets.Packetable) ([]notppackets.Packetable, error) {
 		return packet, nil
 	}
-	sMInfo := buildCommitStateMachines(assert, PullOperation, followerHandler, leaderHandler)
+	sMInfo := buildCommitStateMachines(assert, PullStateMachineType, followerHandler, leaderHandler)
 
 	err := sMInfo.follower.Run()
 	assert.Nil(err, "Failed to run the follower state machine")
