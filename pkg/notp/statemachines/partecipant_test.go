@@ -60,9 +60,9 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType StateMach
 		sMInfo.leaderReceived = append(sMInfo.leaderReceived, *packet)
 	}
 
-	followerStream, err := notptransport.NewInMemoryStream(29 * time.Second)
+	followerStream, err := notptransport.NewInMemoryStream(5 * time.Second)
 	assert.Nil(err, "Failed to initialize the follower transport stream")
-	leaderStream, err := notptransport.NewInMemoryStream(20 * time.Second)
+	leaderStream, err := notptransport.NewInMemoryStream(5 * time.Second)
 	assert.Nil(err, "Failed to initialize the leader transport stream")
 
 	followerPacketLogger, err := notptransport.NewPacketInspector(onFollowerSent, onFollowerReceived)
