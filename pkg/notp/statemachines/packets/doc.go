@@ -1,4 +1,3 @@
-
 // Copyright 2024 Nitro Agility S.r.l.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +14,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package statemachines
-
-// OperationType represents the type of operation that the NOTP protocol is performing.
-type OperationType string
-
-const (
-	// PushOperation represents the push operation type.
-    PushOperation    OperationType = "push"
-	// PullOperation represents the pull operation type.
-    PullOperation    OperationType = "pull"
-	// DefaultOperation represents the default operation type.
-    DefaultOperation OperationType = PushOperation
-)
+// Package packets implements the packets of the NOTP protocol.
+package packets

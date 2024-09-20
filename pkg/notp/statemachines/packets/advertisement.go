@@ -1,4 +1,3 @@
-
 // Copyright 2024 Nitro Agility S.r.l.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package statemachines
+package packets
 
 import (
 	"bytes"
@@ -23,25 +22,24 @@ import (
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
-// NegotiationPacket encapsulates the data structure for a negotiation packet used in the protocol.
-type NegotiationPacket struct {
+// AdvertisementPacket encapsulates the data structure for an advertisement packet used in the protocol.
+type AdvertisementPacket struct {
 	notppackets.Packet
 }
 
 // GetType returns the packet type.
-func (p *NegotiationPacket) GetType() uint64 {
-	return notppackets.CombineUint32toUint64(NegotiationPacketType, 0)
+func (p *AdvertisementPacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(AdvertisementPacketType, 0)
 }
 
-// Marshal converts the NegotiationPacket into a serialized byte slice for transmission.
-func (p *NegotiationPacket) Marshal() ([]byte, error) {
+// Marshal converts the AdvertisementPacket into a serialized byte slice for transmission.
+func (p *AdvertisementPacket) Marshal() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 	return buffer.Bytes(), nil
 }
 
-// Unmarshal populates the NegotiationPacket with data from the given byte slice.
-func (p *NegotiationPacket) Unmarshal(data []byte) error {
+// Unmarshal populates the AdvertisementPacket with data from the given byte slice.
+func (p *AdvertisementPacket) Unmarshal(data []byte) error {
 	// buffer := bytes.NewBuffer(data)
 	return nil
 }
-
