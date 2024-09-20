@@ -46,7 +46,7 @@ func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, Stat
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create handler context: %w", err)
 	}
-	advPacket := notpsmpackets.AdvertisementPacket{}
+	advPacket := notpsmpackets.AdvertisementPacket{ Operation: FollowerRequestLatestInfo }
 	packetable, err := runtime.Handle(handlerCtx, &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to handle advertisement packet: %w", err)

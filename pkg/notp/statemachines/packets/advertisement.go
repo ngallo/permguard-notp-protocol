@@ -25,6 +25,7 @@ import (
 // AdvertisementPacket encapsulates the data structure for an advertisement packet used in the protocol.
 type AdvertisementPacket struct {
 	data []byte
+	Operation string
 }
 
 // GetType returns the packet type.
@@ -35,11 +36,13 @@ func (p *AdvertisementPacket) GetType() uint64 {
 // Serialize serializes the packet.
 func (p *AdvertisementPacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
+	buffer.WriteString(p.Operation)
 	return buffer.Bytes(), nil
 }
 
 // Deserialize deserializes the packet.
 func (p *AdvertisementPacket) Deserialize(data []byte) error {
-	// buffer := bytes.NewBuffer(data)
+	buffer := bytes.NewBuffer(data)
+	p.Operation = buffer.String()
 	return nil
 }
