@@ -92,8 +92,22 @@ func (t *StateMachineRuntimeContext) SendStream(packetables []notppackets.Packet
 	return t.transportLayer.TransmitPacket(packetables)
 }
 
-// Receive retrieves packets from the transport layer.
-func (t *StateMachineRuntimeContext) Receive() ([]notppackets.Packetable, error) {
+// Receive retrieves a packet from the transport layer.
+func (t *StateMachineRuntimeContext) Receive() (notppackets.Packetable, error) {
+	packets, err := t.ReceiveStream()
+	if err != nil {
+		return nil, err
+	}
+	if len(packets) == 0 {
+		return nil, errors.New("notp: received a nil packet")
+	} else if len(packets) > 1 {
+		return nil, errors.New("notp: received more than one packet")
+	}
+	return packets[0], nil
+}
+
+// ReceiveStream retrieves packets from the transport layer.
+func (t *StateMachineRuntimeContext) ReceiveStream() ([]notppackets.Packetable, error) {
 	return t.transportLayer.ReceivePacket()
 }
 

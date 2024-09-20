@@ -25,7 +25,7 @@ import (
 
 const (
 	// PacketNullByte is the null byte used to separate data in the packet.
-	PacketNullByte = 0x01
+	PacketNullByte = 0xFF
 )
 
 // writeStreamDataPacket writes a stream data packet to the buffer.

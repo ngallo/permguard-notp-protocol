@@ -19,7 +19,13 @@ package statemachines
 import (
 	"fmt"
 
+	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
+)
+
+const (
+	// LeaderAwaitRequestLatestInfo represents the await request latest info operation.
+	LeaderAwaitRequestLatestInfo = "await-request-latest-info"
 )
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
@@ -34,9 +40,35 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 	return stateMachine, nil
 }
 
+// leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
+func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	received, err := runtime.Receive()
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to receive packet: %w", err)
+	}
+	advPacket := notpsmpackets.AdvertisementPacket{ }
+	data, err := received.Serialize()
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to serialize packet: %w", err)
+	}
+	advPacket.Deserialize(data)
+	print(received.GetType())
+	return false, LeaderNegotiateState, nil
+}
+
+// leaderPushAdvertiseState handles the push advertisement phase in the protocol.
+func leaderPushAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	return false, LeaderNegotiateState, nil
+}
+
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, LeaderExchangeState, nil
+	if runtime.GetOperation() == PullStateMachineType {
+		return leaderPullAdvertiseState(runtime)
+	} else if runtime.GetOperation() == PushStateMachineType {
+		return leaderPushAdvertiseState(runtime)
+	}
+	return false, nil, fmt.Errorf("notp: invalid operation type: %s", runtime.GetOperation())
 }
 
 // LeaderNegotiateState manages the negotiation phase in the protocol.

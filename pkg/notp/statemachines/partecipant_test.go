@@ -18,6 +18,7 @@ package statemachines
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -59,9 +60,9 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType StateMach
 		sMInfo.leaderReceived = append(sMInfo.leaderReceived, *packet)
 	}
 
-	followerStream, err := notptransport.NewInMemoryStream()
+	followerStream, err := notptransport.NewInMemoryStream(29 * time.Second)
 	assert.Nil(err, "Failed to initialize the follower transport stream")
-	leaderStream, err := notptransport.NewInMemoryStream()
+	leaderStream, err := notptransport.NewInMemoryStream(20 * time.Second)
 	assert.Nil(err, "Failed to initialize the leader transport stream")
 
 	followerPacketLogger, err := notptransport.NewPacketInspector(onFollowerSent, onFollowerReceived)
@@ -106,5 +107,5 @@ func TestPullProtocolExecution(t *testing.T) {
 	assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
 	assert.Len(sMInfo.followerReceived, 0, "Follower received packets")
 	assert.Len(sMInfo.leaderSent, 0, "Leader sent packets")
-	assert.Len(sMInfo.leaderReceived, 0, "Leader received packets")
+	assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
 }
