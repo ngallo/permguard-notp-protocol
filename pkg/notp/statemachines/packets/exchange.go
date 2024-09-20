@@ -24,7 +24,6 @@ import (
 
 // ExchangePacket encapsulates the data structure for an exchange packet used in the protocol.
 type ExchangePacket struct {
-	notppackets.Packet
 }
 
 // GetType returns the packet type.

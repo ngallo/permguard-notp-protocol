@@ -24,7 +24,6 @@ import (
 
 // AdvertisementPacket encapsulates the data structure for an advertisement packet used in the protocol.
 type AdvertisementPacket struct {
-	notppackets.Packet
 }
 
 // GetType returns the packet type.

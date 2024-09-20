@@ -16,12 +16,6 @@
 
 package packets
 
-import (
-	"errors"
-
-	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
-)
-
 const (
 	// AdvertisementPacketType represents the type of the advertisement packet.
 	AdvertisementPacketType = uint32(10)
@@ -30,28 +24,3 @@ const (
 	// ExchangePacketType represents the type of the exchange packet.
 	ExchangePacketType 	= uint32(12)
 )
-
-func PacketConverter(packetType uint32, data []byte) (notppackets.Packetable, error) {
-	switch packetType {
-	case AdvertisementPacketType:
-		return &AdvertisementPacket{
-			Packet: notppackets.Packet{
-				Data: data,
-			},
-		}, nil
-	case NegotiationPacketType:
-		return &NegotiationPacket{
-			Packet: notppackets.Packet{
-				Data: data,
-			},
-		}, nil
-	case ExchangePacketType:
-		return &ExchangePacket{
-			Packet: notppackets.Packet{
-				Data: data,
-			},
-		}, nil
-	default:
-		return nil, errors.New("notp: unknown packet type")
-	}
-}
