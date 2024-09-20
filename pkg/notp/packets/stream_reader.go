@@ -65,6 +65,11 @@ type DataPacketState struct {
 	packetStreamIndex uint64
 }
 
+// GetPacketType returns the type of the data packet.
+func (p *DataPacketState) GetPacketType() uint64 {
+	return p.packetType
+}
+
 // IsComplete returns true if the data packet is complete.
 func (p *DataPacketState) IsComplete() bool {
 	return p.packetStreamSize-1 == p.packetStreamIndex
