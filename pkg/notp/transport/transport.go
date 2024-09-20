@@ -25,7 +25,7 @@ import (
 
 // TransportLayer represents the transport layer responsible for packet transmission in the NOTP protocol.
 type TransportLayer struct {
-	inspector      PacketInspector
+	inspector      *PacketInspector
 	packetSender   PacketSender
 	packetReceiver PacketReceiver
 }
@@ -67,7 +67,7 @@ func (t *TransportLayer) ReceivePacket() (*notppackets.Packet, error) {
 }
 
 // NewTransportLayer creates and initializes a new transport layer.
-func NewTransportLayer(packetSender PacketSender, packetReceiver PacketReceiver, inspector PacketInspector) (*TransportLayer, error) {
+func NewTransportLayer(packetSender PacketSender, packetReceiver PacketReceiver, inspector *PacketInspector) (*TransportLayer, error) {
 	if packetSender == nil {
 		return nil, errors.New("notp: PacketSender cannot be nil")
 	}

@@ -26,45 +26,39 @@ import (
 // PacketHandler defines a function type for handling packets.
 type PacketHandler func(packet *notppackets.Packet)
 
-// PacketSender defines the interface for sending packets over the transport layer.
+// PacketSender defines a function type for sending packets over the transport layer.
 type PacketSender func(packet *notppackets.Packet) error
 
-// PacketReceiver defines the interface for receiving packets from the transport layer.
+// PacketReceiver defines a function type for receiving packets from the transport layer.
 type PacketReceiver func() (*notppackets.Packet, error)
 
-// PacketInspector defines an interface for inspecting sent and received packets.
-type PacketInspector interface {
-	InspectSent(packet *notppackets.Packet)
-	InspectReceived(packet *notppackets.Packet)
-}
-
-// PacketLogger provides logging functionality for sent and received packets, using provided handlers.
-type PacketLogger struct {
+// PacketInspector provides functionality to inspect sent and received packets using the provided handlers.
+type PacketInspector struct {
 	sentPacketHandler     PacketHandler
 	receivedPacketHandler PacketHandler
 }
 
 // InspectSent calls the handler to process the sent packet.
-func (p *PacketLogger) InspectSent(packet *notppackets.Packet) {
+func (p *PacketInspector) InspectSent(packet *notppackets.Packet) {
 	if p.sentPacketHandler != nil {
 		p.sentPacketHandler(packet)
 	}
 }
 
 // InspectReceived calls the handler to process the received packet.
-func (p *PacketLogger) InspectReceived(packet *notppackets.Packet) {
+func (p *PacketInspector) InspectReceived(packet *notppackets.Packet) {
 	if p.receivedPacketHandler != nil {
 		p.receivedPacketHandler(packet)
 	}
 }
 
-// NewPacketLogger creates and initializes a new PacketLogger with handlers for sent and received packets.
-func NewPacketLogger(onSent PacketHandler, onReceived PacketHandler) (*PacketLogger, error) {
+// NewPacketInspector creates and initializes a new PacketInspector with handlers for sent and received packets.
+func NewPacketInspector(onSent PacketHandler, onReceived PacketHandler) (*PacketInspector, error) {
 	if onSent == nil && onReceived == nil {
 		return nil, errors.New("both sent and received packet handlers cannot be nil")
 	}
 
-	return &PacketLogger{
+	return &PacketInspector{
 		sentPacketHandler:     onSent,
 		receivedPacketHandler: onReceived,
 	}, nil
