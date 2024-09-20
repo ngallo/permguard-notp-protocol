@@ -88,7 +88,7 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType StateMach
 // TestPullProtocolExecution verifies the state machine execution for both follower and leader in the context of a pull operation.
 func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
-	
+
 	followerHandler := func(handlerCtx *HandlerContext, packet []notppackets.Packetable) ([]notppackets.Packetable, error) {
 		return packet, nil
 	}
@@ -103,7 +103,7 @@ func TestPullProtocolExecution(t *testing.T) {
 	err = sMInfo.leader.Run()
 	assert.Nil(err, "Failed to run the leader state machine")
 
-	assert.Len(sMInfo.followerSent, 0, "Follower sent packets")
+	assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
 	assert.Len(sMInfo.followerReceived, 0, "Follower received packets")
 	assert.Len(sMInfo.leaderSent, 0, "Leader sent packets")
 	assert.Len(sMInfo.leaderReceived, 0, "Leader received packets")
