@@ -37,8 +37,12 @@ func NewFollowerStateMachine(operation OperationType, converter notppackets.Pack
 
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	runtime.HandlePacketable()
-	return false, FollowerExchangeState, nil
+	if runtime.GetOperation() == PullOperation {
+		return false, FollowerNegotiateState, nil
+	} else if runtime.GetOperation() == PushOperation {
+		return false, FollowerExchangeState, nil
+	}
+	return false, nil, fmt.Errorf("notp: invalid operation type: %s", runtime.GetOperation())
 }
 
 // FollowerNegotiateState manages the negotiation phase in the protocol.
