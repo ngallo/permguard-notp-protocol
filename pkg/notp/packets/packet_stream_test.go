@@ -28,8 +28,8 @@ type SamplePacket struct {
 }
 
 // GetType returns the type of the packet.
-func (p *SamplePacket) GetType() int32 {
-	return -1
+func (p *SamplePacket) GetType() uint64 {
+	return 0
 }
 
 // Serialize serializes the packet.
@@ -79,8 +79,8 @@ func TestPacketWriterAndReader(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(state)
 	assert.Equal(state.packetType, inData1.GetType())
-	assert.Equal(state.packetStreamSize, int32(3))
-	assert.Equal(state.packetStreamIndex, int32(0))
+	assert.Equal(state.packetStreamSize, uint64(3))
+	assert.Equal(state.packetStreamIndex, uint64(0))
 	outData1 := &SamplePacket{}
 	err = outData1.Deserialize(data)
 	assert.Nil(err)
@@ -90,8 +90,8 @@ func TestPacketWriterAndReader(t *testing.T) {
 	data, state, err = reader.ReadNextDataPacket(state)
 	assert.Nil(err)
 	assert.Equal(state.packetType, inData2.GetType())
-	assert.Equal(state.packetStreamSize, int32(3))
-	assert.Equal(state.packetStreamIndex, int32(1))
+	assert.Equal(state.packetStreamSize, uint64(3))
+	assert.Equal(state.packetStreamIndex, uint64(1))
 	outData2 := &SamplePacket{}
 	err = outData2.Deserialize(data)
 	assert.Nil(err)
@@ -101,8 +101,8 @@ func TestPacketWriterAndReader(t *testing.T) {
 	data, state, err = reader.ReadNextDataPacket(state)
 	assert.Nil(err)
 	assert.Equal(state.packetType, inData2.GetType())
-	assert.Equal(state.packetStreamSize, int32(3))
-	assert.Equal(state.packetStreamIndex, int32(2))
+	assert.Equal(state.packetStreamSize, uint64(3))
+	assert.Equal(state.packetStreamIndex, uint64(2))
 	outData3 := &SamplePacket{}
 	err = outData3.Deserialize(data)
 	assert.Nil(err)

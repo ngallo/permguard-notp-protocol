@@ -23,7 +23,19 @@ type Packet struct {
 
 // Packetable represents a packet that can be serialized and deserialized.
 type Packetable interface {
-	GetType() int32
+	GetType() uint64
 	Serialize() ([]byte, error)
 	Deserialize([]byte) error
+}
+
+// CombineUint32toUint64 combina due uint32 in un singolo uint64.
+func CombineUint32toUint64(high, low uint32) uint64 {
+    return (uint64(high) << 32) | uint64(low)
+}
+
+// SplitUint64toUint32 suddivide un uint64 in due uint32.
+func SplitUint64toUint32(value uint64) (uint32, uint32) {
+    high := uint32(value >> 32)
+    low := uint32(value & 0xFFFFFFFF)
+    return high, low
 }

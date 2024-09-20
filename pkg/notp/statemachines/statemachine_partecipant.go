@@ -22,11 +22,11 @@ type OperationType string
 
 const (
 	// AdvertisementPacketType represents the type of the advertisement packet.
-	AdvertisementPacketType = int32(1)
+	AdvertisementPacketType = uint32(1)
 	// NegotiationPacketType represents the type of the negotiation packet.
-	NegotiationPacketType = int32(2)
+	NegotiationPacketType = uint32(2)
 	// ExchangePacketType represents the type of the exchange packet.
-	ExchangePacketType 	= int32(3)
+	ExchangePacketType 	= uint32(3)
 
 	// PushOperation represents the push operation type.
     PushOperation    OperationType = "push"

@@ -28,9 +28,9 @@ type ExchangePacket struct {
 	notppackets.Packet
 }
 
-// PacketType returns the specific type identifier for the exchange packet.
-func (p *ExchangePacket) PacketType() int32 {
-	return ExchangePacketType
+// GetType returns the packet type.
+func (p *ExchangePacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(ExchangePacketType, 0)
 }
 
 // Marshal converts the ExchangePacket into a serialized byte slice for transmission.

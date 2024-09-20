@@ -26,7 +26,7 @@ import (
 type PacketWriter struct {
 	packet           *Packet
 	protocolEndIndex int
-	streamType	   	 int32
+	streamType       uint64
 	streamEndIndex   int
 }
 
@@ -41,7 +41,7 @@ func NewPacketWriter(packet *Packet) (*PacketWriter, error) {
 	return &PacketWriter{
 		packet:           packet,
 		protocolEndIndex: -1,
-		streamType: 	  -1,
+		streamType:       0,
 		streamEndIndex:   -1,
 	}, nil
 }
@@ -79,7 +79,7 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 		return err
 	}
 	if w.streamEndIndex == -1 {
-		streamSize := int32(1)
+		streamSize := uint64(1)
 		if w.packet.Data, err = writeStreamDataPacket(w.packet.Data, &dataType, &streamSize, data); err != nil {
 			return err
 		}
@@ -91,12 +91,12 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 		if w.packet.Data, err = writeDataPacket(w.packet.Data, data); err != nil {
 			return err
 		}
-		idSize := int(unsafe.Sizeof(int32(0)))
+		idSize := int(unsafe.Sizeof(uint64(0)))
 		start := w.protocolEndIndex + 1 + idSize
 		end := start + idSize
-		counter := binary.LittleEndian.Uint32(w.packet.Data[start:end])
+		counter := binary.LittleEndian.Uint64(w.packet.Data[start:end])
 		counter++
-		binary.LittleEndian.PutUint32(w.packet.Data[start:],counter)
+		binary.LittleEndian.PutUint64(w.packet.Data[start:], counter)
 	}
 	w.streamEndIndex = len(w.packet.Data) - 1
 	return nil

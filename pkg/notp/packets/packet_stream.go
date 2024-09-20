@@ -29,8 +29,8 @@ const (
 )
 
 // writeStreamDataPacket writes a stream data packet to the buffer.
-func writeStreamDataPacket(data []byte, packetType *int32, packetStream *int32, payload []byte) ([]byte, error) {
-	size := int32(len(payload))
+func writeStreamDataPacket(data []byte, packetType *uint64, packetStream *uint64, payload []byte) ([]byte, error) {
+	size := uint64(len(payload))
 	if packetType != nil {
 		buf := new(bytes.Buffer)
 		if err := binary.Write(buf, binary.LittleEndian, *packetType); err != nil {
@@ -61,23 +61,23 @@ func writeDataPacket(data []byte, payload []byte) ([]byte, error) {
 }
 
 // indexDataStreamPacket indexes a stream data packet in the buffer.
-func indexDataStreamPacket(offset int, data []byte) (int, int, int32, int32, error) {
+func indexDataStreamPacket(offset int, data []byte) (int, int, uint64, uint64, error) {
 	data = data[offset:]
 	delimiterIndex := bytes.IndexByte(data, PacketNullByte)
 	if delimiterIndex == -1 {
-		return -1, -1, -1, -1, errors.New("notp: delimiter not found")
+		return -1, -1, 0, 0, errors.New("notp: delimiter not found")
 	}
 	headerData := data[:delimiterIndex]
-	idSize := int(unsafe.Sizeof(int32(0)))
-	if len(headerData) != idSize * 3 {
-		return -1, -1, -1, -1, errors.New("notp: invalid data: missing or invalid header")
+	idSize := int(unsafe.Sizeof(uint64(0)))
+	if len(headerData) != idSize*3 {
+		return -1, -1, 0, 0, errors.New("notp: invalid data: missing or invalid header")
 	}
 	dataOffset := delimiterIndex + 1
-	values := []int32{0, 0, 0}
+	values := []uint64{0, 0, 0}
 	for count := range values {
 		start := idSize * count
 		end := (idSize * count) + idSize
-		values[count] = int32(binary.LittleEndian.Uint32(headerData[start:end]))
+		values[count] = uint64(binary.LittleEndian.Uint64(headerData[start:end]))
 	}
 	packetType := values[0]
 	packetStream := values[1]
@@ -86,12 +86,12 @@ func indexDataStreamPacket(offset int, data []byte) (int, int, int32, int32, err
 }
 
 // readStreamDataPacket reads a stream data packet from the buffer.
-func readStreamDataPacket(offset int, data []byte) ([]byte, int, int, int32, int32, error) {
+func readStreamDataPacket(offset int, data []byte) ([]byte, int, int, uint64, uint64, error) {
 	offset, size, packetType, packetStream, err := indexDataStreamPacket(offset, data)
 	if err != nil {
-		return nil, -1, -1, -1, -1, err
+		return nil, -1, -1, 0, 0, err
 	}
-	payload := data[offset:offset + size]
+	payload := data[offset : offset+size]
 	return payload, offset, size, packetType, packetStream, nil
 }
 
@@ -103,12 +103,12 @@ func indexDataPacket(offset int, data []byte) (int, int, error) {
 		return -1, -1, errors.New("notp: delimiter not found")
 	}
 	headerData := data[:delimiterIndex]
-	idSize := int(unsafe.Sizeof(int32(0)))
+	idSize := int(unsafe.Sizeof(uint64(0)))
 	if len(headerData) != idSize {
 		return -1, -1, errors.New("notp: invalid data: missing or invalid header")
 	}
 	dataOffset := delimiterIndex + 1
-	size := int(binary.LittleEndian.Uint32(headerData))
+	size := int(binary.LittleEndian.Uint64(headerData))
 	return offset + dataOffset, size, nil
 }
 
@@ -118,7 +118,6 @@ func readDataPacket(offset int, data []byte) ([]byte, int, int, error) {
 	if err != nil {
 		return nil, -1, -1, err
 	}
-	payload := data[offset:offset + size]
+	payload := data[offset : offset+size]
 	return payload, offset, size, nil
 }
-

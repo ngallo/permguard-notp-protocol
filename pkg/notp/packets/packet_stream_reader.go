@@ -60,14 +60,14 @@ func (w *PacketReader) ReadProtocol() (*ProtocolPacket, error) {
 type DataPacketState struct {
 	offeset           int
 	size              int
-	packetType        int32
-	packetStreamSize  int32
-	packetStreamIndex int32
+	packetType        uint64
+	packetStreamSize  uint64
+	packetStreamIndex uint64
 }
 
 // IsComplete returns true if the data packet is complete.
 func (p *DataPacketState) IsComplete() bool {
-	return p.packetStreamSize - 1 == p.packetStreamIndex
+	return p.packetStreamSize-1 == p.packetStreamIndex
 }
 
 // ReadNextDataPacket read next data packet.
@@ -93,7 +93,7 @@ func (w *PacketReader) ReadNextDataPacket(state *DataPacketState) ([]byte, *Data
 			size:              size,
 			packetType:        packetType,
 			packetStreamSize:  packetStreamSize,
-			packetStreamIndex: int32(0),
+			packetStreamIndex: uint64(0),
 		}
 		return data, state, nil
 	}

@@ -23,12 +23,12 @@ import (
 
 // ProtocolPacket represents a protocol packet.
 type ProtocolPacket struct {
-	Version int32
+	Version uint64
 }
 
 // GetType returns the type of the packet.
-func (p *ProtocolPacket) GetType() int32 {
-	return 0
+func (p *ProtocolPacket) GetType() uint64 {
+	return 1
 }
 
 // Serialize serializes the packet.

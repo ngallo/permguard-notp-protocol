@@ -28,9 +28,9 @@ type NegotiationPacket struct {
 	notppackets.Packet
 }
 
-// PacketType returns the specific type identifier for the negotiation packet.
-func (p *NegotiationPacket) PacketType() int32 {
-	return NegotiationPacketType
+// GetType returns the packet type.
+func (p *NegotiationPacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(NegotiationPacketType, 0)
 }
 
 // Marshal converts the NegotiationPacket into a serialized byte slice for transmission.

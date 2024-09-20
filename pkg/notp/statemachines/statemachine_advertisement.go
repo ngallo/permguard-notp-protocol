@@ -28,9 +28,9 @@ type AdvertisementPacket struct {
 	notppackets.Packet
 }
 
-// PacketType returns the specific type identifier for the advertisement packet.
-func (p *AdvertisementPacket) PacketType() int32 {
-	return AdvertisementPacketType
+// GetType returns the packet type.
+func (p *AdvertisementPacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(AdvertisementPacketType, 0)
 }
 
 // Marshal converts the AdvertisementPacket into a serialized byte slice for transmission.
