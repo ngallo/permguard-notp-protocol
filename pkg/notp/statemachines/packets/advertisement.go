@@ -32,14 +32,14 @@ func (p *AdvertisementPacket) GetType() uint64 {
 	return notppackets.CombineUint32toUint64(AdvertisementPacketType, 0)
 }
 
-// Marshal converts the AdvertisementPacket into a serialized byte slice for transmission.
-func (p *AdvertisementPacket) Marshal() ([]byte, error) {
+// Serialize serializes the packet.
+func (p *AdvertisementPacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 	return buffer.Bytes(), nil
 }
 
-// Unmarshal populates the AdvertisementPacket with data from the given byte slice.
-func (p *AdvertisementPacket) Unmarshal(data []byte) error {
+// Deserialize deserializes the packet.
+func (p *AdvertisementPacket) Deserialize(data []byte) error {
 	// buffer := bytes.NewBuffer(data)
 	return nil
 }

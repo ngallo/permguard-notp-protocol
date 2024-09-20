@@ -19,15 +19,16 @@ package statemachines
 import (
 	"fmt"
 
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
-func NewLeaderStateMachine(operation OperationType, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewLeaderStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
     if operation == "" {
         operation = DefaultOperation
     }
-    stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, decisionHandler, transportLayer)
+    stateMachine, err := NewStateMachine(operation, LeaderAdvertiseState, converter, decisionHandler, transportLayer)
     if err != nil {
         return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
     }

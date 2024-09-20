@@ -32,14 +32,14 @@ func (p *NegotiationPacket) GetType() uint64 {
 	return notppackets.CombineUint32toUint64(NegotiationPacketType, 0)
 }
 
-// Marshal converts the NegotiationPacket into a serialized byte slice for transmission.
-func (p *NegotiationPacket) Marshal() ([]byte, error) {
+// Serialize serializes the packet.
+func (p *NegotiationPacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 	return buffer.Bytes(), nil
 }
 
-// Unmarshal populates the NegotiationPacket with data from the given byte slice.
-func (p *NegotiationPacket) Unmarshal(data []byte) error {
+// Deserialize deserializes the packet.
+func (p *NegotiationPacket) Deserialize(data []byte) error {
 	// buffer := bytes.NewBuffer(data)
 	return nil
 }

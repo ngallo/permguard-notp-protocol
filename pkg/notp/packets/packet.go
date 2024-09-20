@@ -21,6 +21,9 @@ type Packet struct {
 	Data []byte
 }
 
+// PacketConverterHandler defines a function type for handling packet conversions.
+type PacketConverterHandler func (packetType uint32, data []byte) (Packetable, error)
+
 // Packetable represents a packet that can be serialized and deserialized.
 type Packetable interface {
 	GetType() uint64

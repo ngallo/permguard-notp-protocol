@@ -32,14 +32,14 @@ func (p *ExchangePacket) GetType() uint64 {
 	return notppackets.CombineUint32toUint64(ExchangePacketType, 0)
 }
 
-// Marshal converts the ExchangePacket into a serialized byte slice for transmission.
-func (p *ExchangePacket) Marshal() ([]byte, error) {
+// Serialize serializes the packet.
+func (p *ExchangePacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 	return buffer.Bytes(), nil
 }
 
-// Unmarshal populates the ExchangePacket with data from the given byte slice.
-func (p *ExchangePacket) Unmarshal(data []byte) error {
+// Deserialize deserializes the packet.
+func (p *ExchangePacket) Deserialize(data []byte) error {
 	// buffer := bytes.NewBuffer(data)
 	return nil
 }

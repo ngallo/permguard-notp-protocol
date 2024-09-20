@@ -37,7 +37,7 @@ type stateMachinesInfo struct {
 }
 
 // buildCommitStateMachines initializes and returns the follower and leader state machines.
-func buildCommitStateMachines(assert *assert.Assertions, operationType OperationType, followerHandler DecisionHandler, leaderHandler DecisionHandler) *stateMachinesInfo {
+func buildCommitStateMachines(assert *assert.Assertions, operationType OperationType, converter notppackets.PacketConverterHandler, followerHandler DecisionHandler, leaderHandler DecisionHandler) *stateMachinesInfo {
 	sMInfo := &stateMachinesInfo{
 		followerSent:     []notppackets.Packet{},
 		followerReceived: []notppackets.Packet{},
@@ -74,11 +74,11 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType Operation
 	leaderTransport, err := notptransport.NewTransportLayer(followerStream.TransmitPacket, leaderStream.ReceivePacket, leaderPacketLogger)
 	assert.Nil(err, "Failed to initialize the leader transport layer")
 
-	followerSMachine, err := NewFollowerStateMachine(operationType, followerHandler, followerTransport)
+	followerSMachine, err := NewFollowerStateMachine(operationType, converter, followerHandler, followerTransport)
 	assert.Nil(err, "Failed to initialize the follower state machine")
 	sMInfo.follower = followerSMachine
 
-	leaderSMachine, err := NewLeaderStateMachine(operationType, leaderHandler, leaderTransport)
+	leaderSMachine, err := NewLeaderStateMachine(operationType, converter, leaderHandler, leaderTransport)
 	assert.Nil(err, "Failed to initialize the leader state machine")
 	sMInfo.leader = leaderSMachine
 
@@ -95,7 +95,7 @@ func TestPullProtocolExecution(t *testing.T) {
 	leaderHandler := func(packet *notppackets.Packet) (*notppackets.Packet, error) {
 		return packet, nil
 	}
-	sMInfo := buildCommitStateMachines(assert, PullOperation, followerHandler, leaderHandler)
+	sMInfo := buildCommitStateMachines(assert, PullOperation, nil, followerHandler, leaderHandler)
 
 	err := sMInfo.follower.Run()
 	assert.Nil(err, "Failed to run the follower state machine")

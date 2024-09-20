@@ -19,15 +19,16 @@ package statemachines
 import (
 	"fmt"
 
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
-func NewFollowerStateMachine(operation OperationType, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewFollowerStateMachine(operation OperationType, converter notppackets.PacketConverterHandler, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
     if operation == "" {
         operation = DefaultOperation
     }
-    stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, decisionHandler, transportLayer)
+    stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, converter, decisionHandler, transportLayer)
     if err != nil {
         return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
     }
