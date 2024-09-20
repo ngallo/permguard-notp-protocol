@@ -24,6 +24,7 @@ import (
 
 // ExchangePacket encapsulates the data structure for an exchange packet used in the protocol.
 type ExchangePacket struct {
+	data []byte
 }
 
 // GetType returns the packet type.

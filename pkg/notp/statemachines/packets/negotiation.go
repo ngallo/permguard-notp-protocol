@@ -24,6 +24,7 @@ import (
 
 // NegotiationPacket encapsulates the data structure for a negotiation packet used in the protocol.
 type NegotiationPacket struct {
+	data []byte
 }
 
 // GetType returns the packet type.

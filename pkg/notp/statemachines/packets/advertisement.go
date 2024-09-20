@@ -24,6 +24,7 @@ import (
 
 // AdvertisementPacket encapsulates the data structure for an advertisement packet used in the protocol.
 type AdvertisementPacket struct {
+	data []byte
 }
 
 // GetType returns the packet type.
