@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -40,14 +41,18 @@ func TestClientServerStateMachineExecution(t *testing.T) {
 	serverTransport, err := notptransport.NewTransportLayer(clientStream.TransmitPacket, serverStream.ReceivePacket, nil)
 	assert.Nil(err, "Failed to initialize the server transport layer")
 
+	decisionHandler := func(packet *notppackets.Packet) (*notppackets.Packet, error) {
+		return packet, nil
+	}
+
 	// Initialize and run client state machine
-	clientSMachine, err := NewStateMachine(FinalState, clientTransport)
+	clientSMachine, err := NewStateMachine(FinalState, decisionHandler, clientTransport)
 	assert.Nil(err, "Failed to initialize the client state machine")
 	err = clientSMachine.Run()
 	assert.Nil(err, "Failed to run the client state machine")
 
 	// Initialize and run server state machine
-	serverSMachine, err := NewStateMachine(FinalState, serverTransport)
+	serverSMachine, err := NewStateMachine(FinalState, decisionHandler, serverTransport)
 	assert.Nil(err, "Failed to initialize the server state machine")
 	err = serverSMachine.Run()
 	assert.Nil(err, "Failed to run the server state machine")

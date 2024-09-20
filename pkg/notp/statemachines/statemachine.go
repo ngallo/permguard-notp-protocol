@@ -23,6 +23,9 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
+// DecisionHandler defines a function type for handling packet dections.
+type DecisionHandler func(*notppackets.Packet) (*notppackets.Packet, error)
+
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
 
@@ -40,6 +43,7 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 type StateMachineRuntimeContext struct {
 	transportLayer *notptransport.TransportLayer
 	initialState   StateTransitionFunc
+	decisionHandler DecisionHandler
 }
 
 // TransmitPacket sends a packet through the transport layer.
@@ -74,9 +78,12 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(initialState StateTransitionFunc, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(initialState StateTransitionFunc, decisionHandler DecisionHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
+	}
+	if decisionHandler == nil {
+		return nil, errors.New("notp: decision handler cannot be nil")
 	}
 	if transportLayer == nil {
 		return nil, errors.New("notp: transport layer cannot be nil")
@@ -85,6 +92,7 @@ func NewStateMachine(initialState StateTransitionFunc, transportLayer *notptrans
 		runtime: &StateMachineRuntimeContext{
 			transportLayer: transportLayer,
 			initialState:   initialState,
+			decisionHandler: decisionHandler,
 		},
 	}, nil
 }
