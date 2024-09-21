@@ -44,7 +44,7 @@ func (w *PacketReader) ReadProtocol() (*ProtocolPacket, error) {
 	if len(data) == 0 {
 		return nil, errors.New("notp: missing protocol packet")
 	}
-	payload, _, _, err := readDataPacket(0, data)
+	payload, _, _, _, err := readDataPacket(0, data)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (w *PacketReader) ReadNextDataPacket(state *DataPacketState) ([]byte, *Data
 		return nil, state, errors.New("notp: missing protocol packet")
 	}
 	if state == nil {
-		offset, size, err := indexDataPacket(0, data)
+		offset, size, _, err := indexDataPacket(0, data)
 		if err != nil {
 			return nil, state, err
 		}
@@ -103,11 +103,12 @@ func (w *PacketReader) ReadNextDataPacket(state *DataPacketState) ([]byte, *Data
 		return data, state, nil
 	}
 	offset := state.offeset + state.size
-	payload, offset, size, err := readDataPacket(offset, data)
+	payload, offset, size, packetType, err := readDataPacket(offset, data)
 	if err != nil {
 		return nil, state, err
 	}
 	state.offeset = offset
+	state.packetType = packetType
 	state.size = size
 	state.packetStreamIndex++
 	return payload, state, nil

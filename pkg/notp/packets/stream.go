@@ -29,35 +29,27 @@ const (
 )
 
 // writeStreamDataPacket writes a stream data packet to the buffer.
-func writeStreamDataPacket(data []byte, packetType *uint64, packetStream *uint64, payload []byte) ([]byte, error) {
+func writeStreamDataPacket(data []byte, packetType uint64, packetStream *uint64, payload []byte) ([]byte, error) {
 	size := uint64(len(payload))
-	if packetType != nil {
-		buf := new(bytes.Buffer)
-		if err := binary.Write(buf, binary.LittleEndian, *packetType); err != nil {
-			return nil, err
-		}
-		data = append(data, buf.Bytes()...)
-	}
+	values := []uint64{}
 	if packetStream != nil {
-		buf := new(bytes.Buffer)
-		if err := binary.Write(buf, binary.LittleEndian, *packetStream); err != nil {
-			return nil, err
-		}
-		data = append(data, buf.Bytes()...)
+		values = append(values, *packetStream)
 	}
-	buf := new(bytes.Buffer)
-	if err := binary.Write(buf, binary.LittleEndian, size); err != nil {
-		return nil, err
-	}
-	data = append(data, buf.Bytes()...)
+	values = append(values, packetType, size)
+	idSize := int(unsafe.Sizeof(uint64(0)))
+    for _, value := range values {
+        bufData := make([]byte, idSize)
+        binary.LittleEndian.PutUint64(bufData, value)
+        data = append(data, bufData...)
+    }
 	data = append(data, PacketNullByte)
 	data = append(data, payload...)
 	return data, nil
 }
 
 // writeDataPacket writes a data packet to the buffer.
-func writeDataPacket(data []byte, payload []byte) ([]byte, error) {
-	return writeStreamDataPacket(data, nil, nil, payload)
+func writeDataPacket(data []byte, packetType uint64, payload []byte) ([]byte, error) {
+	return writeStreamDataPacket(data, packetType, nil, payload)
 }
 
 // indexDataStreamPacket indexes a stream data packet in the buffer.
@@ -79,8 +71,8 @@ func indexDataStreamPacket(offset int, data []byte) (int, int, uint64, uint64, e
 		end := (idSize * count) + idSize
 		values[count] = uint64(binary.LittleEndian.Uint64(headerData[start:end]))
 	}
-	packetType := values[0]
-	packetStream := values[1]
+	packetStream := values[0]
+	packetType := values[1]
 	size := int(values[2])
 	return offset + dataOffset, size, packetType, packetStream, nil
 }
@@ -96,28 +88,35 @@ func readStreamDataPacket(offset int, data []byte) ([]byte, int, int, uint64, ui
 }
 
 // indexDataPacket indexes a data packet in the buffer.
-func indexDataPacket(offset int, data []byte) (int, int, error) {
+func indexDataPacket(offset int, data []byte) (int, int, uint64, error) {
 	data = data[offset:]
 	delimiterIndex := bytes.IndexByte(data, PacketNullByte)
 	if delimiterIndex == -1 {
-		return -1, -1, errors.New("notp: delimiter not found")
+		return -1, -1, 0, errors.New("notp: delimiter not found")
 	}
 	headerData := data[:delimiterIndex]
 	idSize := int(unsafe.Sizeof(uint64(0)))
-	if len(headerData) != idSize {
-		return -1, -1, errors.New("notp: invalid data: missing or invalid header")
+	if len(headerData) != idSize * 2 {
+		return -1, -1, 0, errors.New("notp: invalid data: missing or invalid header")
 	}
 	dataOffset := delimiterIndex + 1
-	size := int(binary.LittleEndian.Uint64(headerData))
-	return offset + dataOffset, size, nil
+	values := []uint64{0, 0}
+	for count := range values {
+		start := idSize * count
+		end := (idSize * count) + idSize
+		values[count] = uint64(binary.LittleEndian.Uint64(headerData[start:end]))
+	}
+	packetType := values[0]
+	size := int(values[1])
+	return offset + dataOffset, size, packetType, nil
 }
 
 // readDataPacket reads a data packet from the buffer.
-func readDataPacket(offset int, data []byte) ([]byte, int, int, error) {
-	offset, size, err := indexDataPacket(offset, data)
+func readDataPacket(offset int, data []byte) ([]byte, int, int, uint64, error) {
+	offset, size, packetType, err := indexDataPacket(offset, data)
 	if err != nil {
-		return nil, -1, -1, err
+		return nil, -1, -1, 0, err
 	}
 	payload := data[offset : offset+size]
-	return payload, offset, size, nil
+	return payload, offset, size, packetType, nil
 }

@@ -58,7 +58,7 @@ func (w *PacketWriter) WriteProtocol(protocol *ProtocolPacket) error {
 	if err != nil {
 		return err
 	}
-	if w.packet.Data, err = writeDataPacket(w.packet.Data, data); err != nil {
+	if w.packet.Data, err = writeDataPacket(w.packet.Data, protocol.GetType(), data); err != nil {
 		return err
 	}
 	w.protocolEndIndex = len(w.packet.Data) - 1
@@ -80,7 +80,7 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 	}
 	if w.streamEndIndex == -1 {
 		streamSize := uint64(1)
-		if w.packet.Data, err = writeStreamDataPacket(w.packet.Data, &dataType, &streamSize, data); err != nil {
+		if w.packet.Data, err = writeStreamDataPacket(w.packet.Data, dataType, &streamSize, data); err != nil {
 			return err
 		}
 		w.streamType = dataType
@@ -88,11 +88,11 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 		if dataType != w.streamType {
 			return errors.New("notp: invalid data packet type")
 		}
-		if w.packet.Data, err = writeDataPacket(w.packet.Data, data); err != nil {
+		if w.packet.Data, err = writeDataPacket(w.packet.Data, dataType, data); err != nil {
 			return err
 		}
 		idSize := int(unsafe.Sizeof(uint64(0)))
-		start := w.protocolEndIndex + 1 + idSize
+		start := w.protocolEndIndex + 1
 		end := start + idSize
 		counter := binary.LittleEndian.Uint64(w.packet.Data[start:end])
 		counter++
