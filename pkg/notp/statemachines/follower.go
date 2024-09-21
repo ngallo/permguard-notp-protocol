@@ -38,7 +38,7 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 
 // followerPullAdvertiseState handles the pull advertisement phase in the protocol.
 func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	advPacket, packetables, err := CrateAndHandlePacket(runtime, PullStateMachineType, false, notpsmpackets.ClientAdvertiseRequestChanges, notpsmpackets.AlgoFetchAll,
+	_, advPacket, packetables, err := CrateAndHandlePacket(runtime, PullStateMachineType, false, notpsmpackets.ClientAdvertiseRequestChanges, notpsmpackets.AlgoFetchAll,
 		func(basePacket *notpsmpackets.BasePacket) notppackets.Packetable {
 			return &notpsmpackets.AdvertisementPacket{BasePacket: *basePacket}
 	})

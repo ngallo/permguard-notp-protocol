@@ -38,7 +38,7 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 // leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
 func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	var advPacket notpsmpackets.AdvertisementPacket
-	_, err := ReceiveAndHandleHeadStream(runtime, PullStateMachineType, true, &advPacket)
+	_, _, _, err := ReceiveAndHandleHeadStream(runtime, PullStateMachineType, true, &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}

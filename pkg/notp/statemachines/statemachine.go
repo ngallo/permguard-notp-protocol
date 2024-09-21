@@ -59,42 +59,42 @@ func createBasePacketWithContext(smType StateMachineType, isLeader bool, opCode,
 type PacketCreatorFunc func(*notpsmpackets.BasePacket) notppackets.Packetable
 
 // CrateAndHandlePacket creates and handles a packet.
-func CrateAndHandlePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, opCode, algoCode uint16, packetCreator PacketCreatorFunc) (notppackets.Packetable, []notppackets.Packetable, error) {
+func CrateAndHandlePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, opCode, algoCode uint16, packetCreator PacketCreatorFunc) (bool, notppackets.Packetable, []notppackets.Packetable, error) {
 	packet, handlerCtx, err := createBasePacketWithContext(smType, isLeader, opCode, algoCode)
 	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to create base packet with context: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to create base packet with context: %w", err)
 	}
 	createdPacket := packetCreator(packet)
-	packetables, err := runtime.Handle(handlerCtx, createdPacket)
+	retry, handledPacket, handledPacketables, err := runtime.Handle(handlerCtx, createdPacket)
 	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 	}
-	return createdPacket, packetables, nil
+	return retry, handledPacket, handledPacketables , nil
 }
 
 // ReceiveAndHandleHeadStream receives and handles a head stream.
-func ReceiveAndHandleHeadStream(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, target notppackets.Packetable) ([]notppackets.Packetable, error) {
+func ReceiveAndHandleHeadStream(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, target notppackets.Packetable) (bool, notppackets.Packetable, []notppackets.Packetable, error) {
 	handlerCtx := &HandlerContext{
 		stateMachineType: PullStateMachineType,
 		isLeader:         true,
 	}
 	packetsStream, err := runtime.ReceiveStream()
 	if err != nil {
-		return nil, fmt.Errorf("notp: failed to receive packets: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to receive packets: %w", err)
 	}
 	err = notppackets.ConvertPacketable(packetsStream[0], target)
 	if err != nil {
-		return nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}
-	packetables, err := runtime.HandleStream(handlerCtx, packetsStream[1:])
+	retry, handledPacket, handledPacketables, err := runtime.HandleStream(handlerCtx, packetsStream[1:])
 	if err != nil {
-		return nil, fmt.Errorf("notp: failed to handle packet stream: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to handle packet stream: %w", err)
 	}
-	return packetables, nil
+	return retry, handledPacket, handledPacketables, nil
 }
 
 // HostHandler defines a function type for handling packet.
-type HostHandler func(*HandlerContext, []notppackets.Packetable) ([]notppackets.Packetable, error)
+type HostHandler func(*HandlerContext, []notppackets.Packetable) (bool, notppackets.Packetable, []notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
@@ -152,12 +152,12 @@ func (t *StateMachineRuntimeContext) ReceiveStream() ([]notppackets.Packetable, 
 }
 
 // Handle handles the packet for the state machine.
-func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, packetable notppackets.Packetable) ([]notppackets.Packetable, error) {
+func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, packetable notppackets.Packetable) (bool, notppackets.Packetable, []notppackets.Packetable, error) {
 	return t.HandleStream(handlerCtx, []notppackets.Packetable{packetable})
 }
 
 // HandleStream handles a packet stream for the state machine.
-func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, packetables []notppackets.Packetable) ([]notppackets.Packetable, error) {
+func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, packetables []notppackets.Packetable) (bool, notppackets.Packetable, []notppackets.Packetable, error) {
 	return t.hostHandler(handlerCtx, packetables)
 }
 
