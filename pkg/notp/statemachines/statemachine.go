@@ -84,6 +84,19 @@ func NewBasePacketWithContext(stateMachineType StateMachineType, isLeader bool, 
 	return packet, handlerCtx, nil
 }
 
+// ReceiveHeadStream receives the head packets stream.
+func ReceiveHeadStream(runtime *StateMachineRuntimeContext, target notppackets.Packetable) ([]notppackets.Packetable, error) {
+	packetsStream, err := runtime.ReceiveStream()
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to receive packets: %w", err)
+	}
+	err = notppackets.ConvertPacketable(packetsStream[0], target)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
+	}
+	return packetsStream[1:], nil
+}
+
 // HostHandler defines a function type for handling packet.
 type HostHandler func(*HandlerContext, []notppackets.Packetable) ([]notppackets.Packetable, error)
 

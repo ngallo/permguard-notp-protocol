@@ -36,15 +36,12 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 	return stateMachine, nil
 }
 
+
 // leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
 func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	// Receive the advertisement packets stream..
-	packetsStream, err := runtime.ReceiveStream()
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to receive packet: %w", err)
-	}
+	// Receive the advertisement packet and its stream
 	var advPacket notpsmpackets.AdvertisementPacket
-	err = notppackets.ConvertPacketable(packetsStream[0], &advPacket)
+	_, err := ReceiveHeadStream(runtime, &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}

@@ -38,9 +38,7 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 // followerPullAdvertiseState handles the pull advertisement phase in the protocol.
 func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	// Create an advertisement packet.
-	operationCode := notpsmpackets.ClientAdvertiseRequestLatestState
-	algorithmCode := notpsmpackets.AlgoFetchAll
-	packet, handlerCtx, err := NewBasePacketWithContext(PullStateMachineType, false, operationCode, algorithmCode, 0)
+	packet, handlerCtx, err := NewBasePacketWithContext(PullStateMachineType, false, notpsmpackets.ClientAdvertiseRequestLatestState, notpsmpackets.AlgoFetchAll, 0)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create base packet with context: %w", err)
 	}
