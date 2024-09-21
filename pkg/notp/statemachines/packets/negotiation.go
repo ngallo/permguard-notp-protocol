@@ -17,14 +17,12 @@
 package packets
 
 import (
-	"bytes"
-
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
 // NegotiationPacket encapsulates the data structure for a negotiation packet used in the protocol.
 type NegotiationPacket struct {
-	data []byte
+	BasePacket
 }
 
 // GetType returns the packet type.
@@ -34,13 +32,18 @@ func (p *NegotiationPacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *NegotiationPacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	return buffer.Bytes(), nil
+	data, err := p.BasePacket.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // Deserialize deserializes the packet.
 func (p *NegotiationPacket) Deserialize(data []byte) error {
-	// buffer := bytes.NewBuffer(data)
+	err := p.BasePacket.Deserialize(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
-

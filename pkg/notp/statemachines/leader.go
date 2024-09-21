@@ -24,11 +24,6 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-const (
-	// LeaderAwaitRequestLatestInfo represents the await request latest info operation.
-	LeaderAwaitRequestLatestInfo = "await-request-latest-info"
-)
-
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
 func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if operation == "" {
@@ -43,15 +38,18 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 
 // leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
 func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	received, err := runtime.Receive()
+	// Receive the advertisement packets stream..
+	packetsStream, err := runtime.ReceiveStream()
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive packet: %w", err)
 	}
 	var advPacket notpsmpackets.AdvertisementPacket
-	err = notppackets.ConvertPacketable(received, &advPacket)
+	err = notppackets.ConvertPacketable(packetsStream[0], &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}
+
+	// Send the advertisement packets stream and transition to the next state.
 	return false, LeaderNegotiateState, nil
 }
 

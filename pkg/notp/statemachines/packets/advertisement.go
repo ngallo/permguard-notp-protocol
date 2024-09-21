@@ -17,14 +17,12 @@
 package packets
 
 import (
-	"bytes"
-
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
 // AdvertisementPacket encapsulates the data structure for an advertisement packet used in the protocol.
 type AdvertisementPacket struct {
-	Operation string
+	BasePacket
 }
 
 // GetType returns the packet type.
@@ -34,14 +32,18 @@ func (p *AdvertisementPacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *AdvertisementPacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	buffer.WriteString(p.Operation)
-	return buffer.Bytes(), nil
+	data, err := p.BasePacket.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // Deserialize deserializes the packet.
 func (p *AdvertisementPacket) Deserialize(data []byte) error {
-	buffer := bytes.NewBuffer(data)
-	p.Operation = buffer.String()
+	err := p.BasePacket.Deserialize(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }

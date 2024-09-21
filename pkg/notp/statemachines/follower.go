@@ -23,11 +23,6 @@ import (
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
-const (
-	// FollowerRequestLatestInfo represents the request latest info operation.
-	FollowerRequestLatestInfo = "request-latest-info"
-)
-
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
 func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if operation == "" {
@@ -42,16 +37,23 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 
 // followerPullAdvertiseState handles the pull advertisement phase in the protocol.
 func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	handlerCtx, err := NewHandlerContext(runtime.GetOperation(), false, FollowerRequestLatestInfo)
+	// Create an advertisement packet.
+	operationCode := notpsmpackets.ClientAdvertiseRequestLatestState
+	algorithmCode := notpsmpackets.AlgoFetchAll
+	packet, handlerCtx, err := NewBasePacketWithContext(PullStateMachineType, false, operationCode, algorithmCode, 0)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create handler context: %w", err)
+		return false, nil, fmt.Errorf("notp: failed to create base packet with context: %w", err)
 	}
-	advPacket := notpsmpackets.AdvertisementPacket{ Operation: FollowerRequestLatestInfo }
-	packetable, err := runtime.Handle(handlerCtx, &advPacket)
+	advPacket := notpsmpackets.AdvertisementPacket{ BasePacket: *packet }
+
+	// Handle the advertisement packet.
+	packetables, err := runtime.Handle(handlerCtx, &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to handle advertisement packet: %w", err)
 	}
-	runtime.SendStream(packetable)
+
+	// Send the advertisement packets stream and transition to the next state.
+	runtime.SendStream(packetables)
 	return false, FollowerNegotiateState, nil
 }
 

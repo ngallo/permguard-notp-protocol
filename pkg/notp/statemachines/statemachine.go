@@ -18,23 +18,30 @@ package statemachines
 
 import (
 	"errors"
+	"fmt"
 
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
+	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
 // HandlerContext holds the context of the handler.
 type HandlerContext struct {
 	stateMachineType StateMachineType
-	isLeader 	   	 bool
-	operationType	 string
+	isLeader		 bool
+    OperationCode	 uint16
+    AlgorithmCode	 uint16
+    ErrorCode     	 uint16
 }
 
 // NewHandlerContext creates and initializes a new handler context.
-func NewHandlerContext(stateMachineType StateMachineType, isLeader bool, operationType string) (*HandlerContext, error) {
+func NewHandlerContext(stateMachineType StateMachineType, isLeader bool, operationCode, algorithmCode, errorCode uint16) (*HandlerContext, error) {
 	return &HandlerContext{
 		stateMachineType: stateMachineType,
-		operationType:    operationType,
+		isLeader: isLeader,
+		OperationCode: operationCode,
+		AlgorithmCode: algorithmCode,
+		ErrorCode: errorCode,
 	}, nil
 }
 
@@ -49,8 +56,32 @@ func (h *HandlerContext) IsLeader() bool {
 }
 
 // GetOperationType returns the operation type of the handler.
-func (h *HandlerContext) GetOperationType() string {
-	return h.operationType
+func (h *HandlerContext) GetOperationType() uint16 {
+	return h.OperationCode
+}
+
+// GetAlgorithmType returns the algorithm type of the handler.
+func (h *HandlerContext) GetAlgorithmType() uint16 {
+	return h.AlgorithmCode
+}
+
+// GetErrorCode returns the error code of the handler.
+func (h *HandlerContext) GetErrorCode() uint16 {
+	return h.ErrorCode
+}
+
+// NewBasePacketWithContext creates and initializes a new base packet with the given handler context.
+func NewBasePacketWithContext(stateMachineType StateMachineType, isLeader bool, operationCode, algorithmCode, errorCode uint16) (*notpsmpackets.BasePacket, *HandlerContext, error) {
+	packet := &notpsmpackets.BasePacket{
+		OperationCode: 0,
+		AlgorithmCode: 0,
+		ErrorCode: 0,
+	}
+	handlerCtx, err := NewHandlerContext(stateMachineType, isLeader, operationCode, algorithmCode, errorCode)
+	if err != nil {
+		return nil, nil, fmt.Errorf("notp: failed to create handler context: %w", err)
+	}
+	return packet, handlerCtx, nil
 }
 
 // HostHandler defines a function type for handling packet.

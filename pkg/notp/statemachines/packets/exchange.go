@@ -17,14 +17,12 @@
 package packets
 
 import (
-	"bytes"
-
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
 // ExchangePacket encapsulates the data structure for an exchange packet used in the protocol.
 type ExchangePacket struct {
-	data []byte
+	BasePacket
 }
 
 // GetType returns the packet type.
@@ -34,12 +32,18 @@ func (p *ExchangePacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *ExchangePacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	return buffer.Bytes(), nil
+	data, err := p.BasePacket.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // Deserialize deserializes the packet.
 func (p *ExchangePacket) Deserialize(data []byte) error {
-	// buffer := bytes.NewBuffer(data)
+	err := p.BasePacket.Deserialize(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
