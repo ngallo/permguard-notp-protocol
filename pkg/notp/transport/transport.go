@@ -95,8 +95,10 @@ func (t *TransportLayer) ReceivePacket() ([]notppackets.Packetable, error) {
 		return nil, errors.New("notp: unsupported protocol version")
 	}
 	packetables := []notppackets.Packetable{}
+	var state *notppackets.DataPacketState
 	for {
-		data, state, err := reader.ReadNextDataPacket(nil)
+		var data []byte
+		data, state, err = reader.ReadNextDataPacket(state)
 		if err != nil {
 			return nil, err
 		}

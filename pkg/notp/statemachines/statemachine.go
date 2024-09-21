@@ -29,20 +29,6 @@ import (
 type HandlerContext struct {
 	stateMachineType StateMachineType
 	isLeader		 bool
-    OperationCode	 uint16
-    AlgorithmCode	 uint16
-    ErrorCode     	 uint16
-}
-
-// NewHandlerContext creates and initializes a new handler context.
-func NewHandlerContext(stateMachineType StateMachineType, isLeader bool, operationCode, algorithmCode, errorCode uint16) (*HandlerContext, error) {
-	return &HandlerContext{
-		stateMachineType: stateMachineType,
-		isLeader: isLeader,
-		OperationCode: operationCode,
-		AlgorithmCode: algorithmCode,
-		ErrorCode: errorCode,
-	}, nil
 }
 
 // GetStateMachineType returns the state machine type of the handler.
@@ -55,37 +41,43 @@ func (h *HandlerContext) IsLeader() bool {
 	return h.isLeader
 }
 
-// GetOperationType returns the operation type of the handler.
-func (h *HandlerContext) GetOperationType() uint16 {
-	return h.OperationCode
-}
-
-// GetAlgorithmType returns the algorithm type of the handler.
-func (h *HandlerContext) GetAlgorithmType() uint16 {
-	return h.AlgorithmCode
-}
-
-// GetErrorCode returns the error code of the handler.
-func (h *HandlerContext) GetErrorCode() uint16 {
-	return h.ErrorCode
-}
-
-// NewBasePacketWithContext creates and initializes a new base packet with the given handler context.
-func NewBasePacketWithContext(stateMachineType StateMachineType, isLeader bool, operationCode, algorithmCode, errorCode uint16) (*notpsmpackets.BasePacket, *HandlerContext, error) {
-	packet := &notpsmpackets.BasePacket{
-		OperationCode: 0,
-		AlgorithmCode: 0,
-		ErrorCode: 0,
+// createBasePacketWithContext creates and initializes a new base packet with the given handler context.
+func createBasePacketWithContext(smType StateMachineType, isLeader bool, opCode, algoCode uint16) (*notpsmpackets.BasePacket, *HandlerContext, error) {
+	handlerCtx := &HandlerContext{
+		stateMachineType: smType,
+		isLeader: isLeader,
 	}
-	handlerCtx, err := NewHandlerContext(stateMachineType, isLeader, operationCode, algorithmCode, errorCode)
-	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to create handler context: %w", err)
+	packet := &notpsmpackets.BasePacket{
+		OperationCode: opCode,
+		AlgorithmCode: algoCode,
+		ErrorCode: 0,
 	}
 	return packet, handlerCtx, nil
 }
 
-// ReceiveHeadStream receives the head packets stream.
-func ReceiveHeadStream(runtime *StateMachineRuntimeContext, target notppackets.Packetable) ([]notppackets.Packetable, error) {
+// PacketCreatorFunc is a function that creates a packet.
+type PacketCreatorFunc func(*notpsmpackets.BasePacket) notppackets.Packetable
+
+// CrateAndHandlePacket creates and handles a packet.
+func CrateAndHandlePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, opCode, algoCode uint16, packetCreator PacketCreatorFunc) (notppackets.Packetable, []notppackets.Packetable, error) {
+	packet, handlerCtx, err := createBasePacketWithContext(smType, isLeader, opCode, algoCode)
+	if err != nil {
+		return nil, nil, fmt.Errorf("notp: failed to create base packet with context: %w", err)
+	}
+	createdPacket := packetCreator(packet)
+	packetables, err := runtime.Handle(handlerCtx, createdPacket)
+	if err != nil {
+		return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+	}
+	return createdPacket, packetables, nil
+}
+
+// ReceiveAndHandleHeadStream receives and handles a head stream.
+func ReceiveAndHandleHeadStream(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, target notppackets.Packetable) ([]notppackets.Packetable, error) {
+	handlerCtx := &HandlerContext{
+		stateMachineType: PullStateMachineType,
+		isLeader:         true,
+	}
 	packetsStream, err := runtime.ReceiveStream()
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to receive packets: %w", err)
@@ -94,7 +86,11 @@ func ReceiveHeadStream(runtime *StateMachineRuntimeContext, target notppackets.P
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}
-	return packetsStream[1:], nil
+	packetables, err := runtime.HandleStream(handlerCtx, packetsStream[1:])
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to handle packet stream: %w", err)
+	}
+	return packetables, nil
 }
 
 // HostHandler defines a function type for handling packet.

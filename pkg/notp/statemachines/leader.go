@@ -19,7 +19,6 @@ package statemachines
 import (
 	"fmt"
 
-	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
@@ -36,17 +35,13 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 	return stateMachine, nil
 }
 
-
 // leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
 func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	// Receive the advertisement packet and its stream
 	var advPacket notpsmpackets.AdvertisementPacket
-	_, err := ReceiveHeadStream(runtime, &advPacket)
+	_, err := ReceiveAndHandleHeadStream(runtime, PullStateMachineType, true, &advPacket)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
 	}
-
-	// Send the advertisement packets stream and transition to the next state.
 	return false, LeaderNegotiateState, nil
 }
 
