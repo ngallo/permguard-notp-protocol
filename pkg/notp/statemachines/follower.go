@@ -57,7 +57,7 @@ func followerPullRequestCurrentState(runtime *StateMachineRuntimeContext) (bool,
 
 // followerPullSubmitChangesetRequest handles the advertisement phase in the protocol for pull requests.
 func followerPullSubmitChangesetRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
+	_, _, _, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}

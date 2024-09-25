@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
+	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -90,10 +91,10 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType StateMach
 func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
 
-	followerHandler := func(handlerCtx *HandlerContext, packets []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
+	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
 		return false, packets, nil
 	}
-	leaderHandler := func(handlerCtx *HandlerContext, packets []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
+	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
 		return false, packets, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, PullStateMachineType, followerHandler, leaderHandler)

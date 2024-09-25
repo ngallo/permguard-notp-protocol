@@ -44,7 +44,7 @@ func (h *HandlerContext) IsLeader() bool {
 type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 
 // HostHandler defines a function type for handling packet.
-type HostHandler func(*HandlerContext, []notppackets.Packetable) (bool, []notppackets.Packetable, error)
+type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, []notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
@@ -102,13 +102,16 @@ func (t *StateMachineRuntimeContext) ReceiveStream() ([]notppackets.Packetable, 
 }
 
 // Handle handles the packet for the state machine.
-func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, packetable notppackets.Packetable) (bool, []notppackets.Packetable, error) {
-	return t.HandleStream(handlerCtx, []notppackets.Packetable{packetable})
+func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket) (bool, []notppackets.Packetable, error) {
+	return t.HandleStream(handlerCtx, statePacket, nil)
 }
 
 // HandleStream handles a packet stream for the state machine.
-func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, packetables []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
-	return t.hostHandler(handlerCtx, packetables)
+func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packetables []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
+	if packetables == nil {
+		packetables = []notppackets.Packetable{}
+	}
+	return t.hostHandler(handlerCtx, statePacket, packetables)
 }
 
 // StateMachine orchestrates the execution of state transitions.

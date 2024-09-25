@@ -49,56 +49,57 @@ func createStatePacket(smType StateMachineType, isLeader bool, state, algorithm 
 }
 
 // createAndHandleStatePacket creates a state packet and handles it.
-func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16) (bool, []notppackets.Packetable, error) {
+func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	packet, handlerCtx, err := createStatePacket(smType, isLeader, state, algorithm)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
 	retry, handledPacketables, err := runtime.Handle(handlerCtx, packet)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 	}
-	return retry, handledPacketables, nil
+	return retry, packet, handledPacketables, nil
 }
 
 // createAndHandleAndStreamStatePacket creates a state packet and handles it.
 func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16) error {
-	_, packetables, err := createAndHandleStatePacket(runtime, smType, isLeader, state, algorithm)
+	_, packet, packetables, err := createAndHandleStatePacket(runtime, smType, isLeader, state, algorithm)
 	if err != nil {
 		return fmt.Errorf("notp: failed to create and handle packet: %w", err)
 	}
-	runtime.SendStream(packetables)
+	streamPacketables := append([]notppackets.Packetable{packet}, packetables...)
+	runtime.SendStream(streamPacketables)
 	return nil
 }
 
 // receiveAndHandleStatePacket receives a state packet and handles it.
-func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, expectedState uint16) (bool, []notppackets.Packetable, error) {
+func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, expectedState uint16) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	handlerCtx := &HandlerContext{
 		stateMachineType: smType,
 		isLeader:         isLeader,
 	}
 	packetsStream, err := runtime.ReceiveStream()
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to receive packets: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to receive packets: %w", err)
 	}
-	statePacket := notpsmpackets.StatePacket {}
+	statePacket := &notpsmpackets.StatePacket {}
 	data, err := packetsStream[0].Serialize()
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to serialize packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to serialize packet: %w", err)
 	}
 	err = statePacket.Deserialize(data)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to deserialize state packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to deserialize state packet: %w", err)
 	}
 	if statePacket.HasError() {
-		return false, nil, fmt.Errorf("notp: received state packet with error: %d", statePacket.ErrorCode)
+		return false, nil, nil, fmt.Errorf("notp: received state packet with error: %d", statePacket.ErrorCode)
 	}
 	if statePacket.StateCode != expectedState {
-		return false, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.StateCode)
+		return false, nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.StateCode)
 	}
-	retry, handledPacketables, err := runtime.HandleStream(handlerCtx, packetsStream)
+	retry, handledPacketables, err := runtime.Handle(handlerCtx, statePacket)
 	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+		return false, nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 	}
-	return retry, handledPacketables, nil
+	return retry, statePacket, handledPacketables, nil
 }
