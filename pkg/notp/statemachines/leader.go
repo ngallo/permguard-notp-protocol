@@ -19,7 +19,6 @@ package statemachines
 import (
 	"fmt"
 
-	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -35,29 +34,9 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 	return stateMachine, nil
 }
 
-// leaderPullAdvertiseState handles the pull advertisement phase in the protocol.
-func leaderPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	var advPacket notpsmpackets.AdvertisementPacket
-	_, _, _, err := ReceiveAndHandleHeadStream(runtime, PullStateMachineType, true, &advPacket)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to convert packetable: %w", err)
-	}
-	return false, LeaderNegotiateState, nil
-}
-
-// leaderPushAdvertiseState handles the push advertisement phase in the protocol.
-func leaderPushAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, LeaderNegotiateState, nil
-}
-
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	if runtime.GetOperation() == PullStateMachineType {
-		return leaderPullAdvertiseState(runtime)
-	} else if runtime.GetOperation() == PushStateMachineType {
-		return leaderPushAdvertiseState(runtime)
-	}
-	return false, nil, fmt.Errorf("notp: invalid operation type: %s", runtime.GetOperation())
+	return false, LeaderNegotiateState, nil
 }
 
 // LeaderNegotiateState manages the negotiation phase in the protocol.

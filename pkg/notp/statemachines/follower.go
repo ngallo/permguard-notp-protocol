@@ -19,7 +19,6 @@ package statemachines
 import (
 	"fmt"
 
-	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
@@ -36,40 +35,31 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 	return stateMachine, nil
 }
 
-// followerPullAdvertiseState handles the pull advertisement phase in the protocol.
-func followerPullAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, advPacket, packetables, err := CrateAndHandlePacket(runtime, PullStateMachineType, false, notpsmpackets.ClientAdvertiseRequestChanges, notpsmpackets.AlgoFetchAll,
-		func(basePacket *notpsmpackets.BasePacket) notppackets.Packetable {
-			return &notpsmpackets.AdvertisementPacket{BasePacket: *basePacket}
-	})
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create and handle advertisement packet: %w", err)
-	}
-	runtime.SendStream(append([]notppackets.Packetable{advPacket}, packetables...))
-	return false, FollowerNegotiateState, nil
-}
-
-// followerPushAdvertiseState handles the push advertisement phase in the protocol.
-func followerPushAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, FollowerNegotiateState, nil
-}
-
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	if runtime.GetOperation() == PullStateMachineType {
-		return followerPullAdvertiseState(runtime)
-	} else if runtime.GetOperation() == PushStateMachineType {
-		return followerPushAdvertiseState(runtime)
+	switch runtime.GetOperation() {
+	case PushStateMachineType:
+		return false, followerPullRequestCurrentState, nil
+	case PullStateMachineType:
+		return false, followerPullRequestCurrentState, nil
 	}
-	return false, nil, fmt.Errorf("notp: invalid operation type: %s", runtime.GetOperation())
+	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetOperation())
 }
 
-// FollowerNegotiateState manages the negotiation phase in the protocol.
-func FollowerNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, FollowerExchangeState, nil
+// followerPullRequestCurrentState handles the advertisement phase in the protocol for pull requests.
+func followerPullRequestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	err := createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoFetchAll)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
+	}
+	return false, followerPullRequestCurrentState, nil
 }
 
-// FollowerExchangeState governs the exchange phase in the protocol.
-func FollowerExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, FinalState, nil
+// followerPullSubmitChangesetRequest handles the advertisement phase in the protocol for pull requests.
+func followerPullSubmitChangesetRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	_, _, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+	}
+	return false, followerPullRequestCurrentState, nil
 }

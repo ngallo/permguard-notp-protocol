@@ -20,65 +20,74 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
 const (
-	// AdvertisementPacketType represents the type of the advertisement packet.
-	AdvertisementPacketType = uint32(10)
-	// NegotiationPacketType represents the type of the negotiation packet.
-	NegotiationPacketType = uint32(11)
-	// ExchangePacketType represents the type of the exchange packet.
-	ExchangePacketType = uint32(12)
+	// StatePacketType represents the type of the state packet.
+	StatePacketType = uint32(10)
 
-	// AlgoFetchExactVersion represents fetching an exact version of the data.
-	AlgoFetchExactVersion = uint16(100)
 	// AlgoFetchAll represents fetching all available data.
 	AlgoFetchAll = uint16(101)
+	// AlgoFetchExactVersion represents fetching an exact version of the data.
+	AlgoFetchExactVersion = uint16(100)
 	// AlgoFetchMinimal represents fetching minimal data when bandwidth is limited.
 	AlgoFetchMinimal = uint16(1002)
 
-	// ClientAdvertiseRequestChanges represents the request changes.
-	ClientAdvertiseRequestChanges = uint16(110)
-	// ClientNegotiateRequestChangeset represents the request changeset operation.
-	ClientNegotiateRequestChangeset = uint16(111)
+	// Represents a request to obtain the current state.
+	RequestCurrentState = uint16(111)
+	// Respond with the current state.
+	RespondCurrentState = uint16(112)
+	// Notify other parties about the current state.
+	NotifyCurrentState = uint16(113)
 
-	// ServerAdvertiseReplyChanges represents the reply changes operation.
-	ServerAdvertiseReplyChanges = uint16(210)
-	// ServerNegotiateRespondToRequest represents the respond to request operation.
-	ServerNegotiateRespondToRequest = uint16(211)
-	// ServerExchangeStream represents the exchange stream operation.
-	ServerExchangeStream = uint16(212)
+	// Submit a request to initiate a negotiation process.
+	SubmitNegotiationRequest = uint16(114)
+	// Respond to reject the submitted negotiation request.
+	RejectNegotiationRequest = uint16(115)
+	// Approve the submitted negotiation request.
+	ApproveNegotiationRequest = uint16(116)
+
+	// Start the data streaming process.
+	InitiateDataStream = uint16(117)
+	// Continue sending data within the ongoing stream.
+	ContinueDataStream = uint16(118)
+	// Conclude the data streaming process.
+	ConcludeDataStream = uint16(119)
 )
 
-// BasePacket encapsulates the data structure for a base packet used in the protocol.
-type BasePacket struct {
-	OperationCode uint16
+// StatePacket encapsulates the data structure for a base packet used in the protocol.
+type StatePacket struct {
+	StateCode     uint16
 	AlgorithmCode uint16
 	ErrorCode     uint16
 }
 
+// GetType returns the packet type.
+func (p *StatePacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(StatePacketType, 0)
+}
+
 // HasError returns true if the packet has errors.
-func (p *BasePacket) HasError() bool {
+func (p *StatePacket) HasError() bool {
 	return p.ErrorCode != 0
 }
 
 // Serialize serializes the packet into bytes.
-func (p *BasePacket) Serialize() ([]byte, error) {
+func (p *StatePacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 
-	// Serialize OperationCode (2 bytes, uint16)
-	err := binary.Write(buffer, binary.BigEndian, p.OperationCode)
+	err := binary.Write(buffer, binary.BigEndian, p.StateCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write OperationCode: %v", err)
 	}
 
-	// Serialize AlgorithmCode (2 bytes, uint16)
 	err = binary.Write(buffer, binary.BigEndian, p.AlgorithmCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write AlgorithmCode: %v", err)
 	}
 
-	// Serialize ErrorCode (2 bytes, uint16)
 	err = binary.Write(buffer, binary.BigEndian, p.ErrorCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write ErrorCode: %v", err)
@@ -88,10 +97,10 @@ func (p *BasePacket) Serialize() ([]byte, error) {
 }
 
 // Deserialize deserializes the packet from bytes.
-func (p *BasePacket) Deserialize(data []byte) error {
+func (p *StatePacket) Deserialize(data []byte) error {
 	buffer := bytes.NewBuffer(data)
 
-	err := binary.Read(buffer, binary.BigEndian, &p.OperationCode)
+	err := binary.Read(buffer, binary.BigEndian, &p.StateCode)
 	if err != nil {
 		return fmt.Errorf("failed to read OperationCode: %v", err)
 	}
