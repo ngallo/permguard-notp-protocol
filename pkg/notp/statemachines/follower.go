@@ -65,5 +65,5 @@ func followerPullSubmitChangesetRequest(runtime *StateMachineRuntimeContext) (bo
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}
-	return false, followerPullRequestCurrentState, nil
+	return false, FinalState, nil
 }
