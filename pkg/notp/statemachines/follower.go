@@ -39,29 +39,29 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	switch runtime.GetOperation() {
 	case PushStateMachineType:
-		return false, followerPullRequestCurrentState, nil
+		return false, requestCurrentState, nil
 	case PullStateMachineType:
-		return false, followerPullRequestCurrentState, nil
+		return false, requestCurrentState, nil
 	}
 	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetOperation())
 }
 
-// followerPullRequestCurrentState handles the advertisement phase in the protocol for pull requests.
-func followerPullRequestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoFetchAll, nil)
+// requestCurrentState state to request the current state.
+func requestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	err := createAndHandleAndStreamStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoNone, nil)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
-	return false, followerPullRequestCurrentState, nil
+	return false, requestCurrentState, nil
 }
 
-// followerPullSubmitChangesetRequest handles the advertisement phase in the protocol for pull requests.
-func followerPullSubmitChangesetRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
+// submitNegotiationRequest state to submit negotiation request.
+func submitNegotiationRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	_, _, packetables, err := receiveAndHandleStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.RespondCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.SubmitNegotiationRequest, notpsmpackets.AlgoFetchAll, packetables)
+	err = createAndHandleAndStreamStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.SubmitNegotiationRequest, notpsmpackets.AlgoNone, packetables)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}

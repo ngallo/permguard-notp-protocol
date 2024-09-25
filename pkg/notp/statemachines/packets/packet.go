@@ -28,12 +28,8 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// AlgoFetchAll represents fetching all available data.
-	AlgoFetchAll = uint16(101)
-	// AlgoFetchExactVersion represents fetching an exact version of the data.
-	AlgoFetchExactVersion = uint16(100)
-	// AlgoFetchMinimal represents fetching minimal data when bandwidth is limited.
-	AlgoFetchMinimal = uint16(1002)
+	// AlgoNone represents no algorithm.
+	AlgoNone = uint16(101)
 
 	// Represents a request to obtain the current state.
 	RequestCurrentState = uint16(111)
