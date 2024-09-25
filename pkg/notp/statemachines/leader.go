@@ -19,6 +19,7 @@ package statemachines
 import (
 	"fmt"
 
+	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -36,15 +37,24 @@ func NewLeaderStateMachine(operation StateMachineType, hostHandler HostHandler, 
 
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, LeaderNegotiateState, nil
+	switch runtime.GetOperation() {
+	case PushStateMachineType:
+		return false, leaderPullRespondCurrentState, nil
+	case PullStateMachineType:
+		return false, leaderPullRespondCurrentState, nil
+	}
+	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetOperation())
 }
 
-// LeaderNegotiateState manages the negotiation phase in the protocol.
-func LeaderNegotiateState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, LeaderExchangeState, nil
-}
-
-// LeaderExchangeState governs the exchange phase in the protocol.
-func LeaderExchangeState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+// leaderPullRespondCurrentState handles the advertisement phase in the protocol for pull requests.
+func leaderPullRespondCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+	_, _, _, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+	}
+	// err = createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.SubmitNegotiationRequest, notpsmpackets.AlgoFetchAll, packetables)
+	// if err != nil {
+	// 	return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
+	// }
 	return false, FinalState, nil
 }

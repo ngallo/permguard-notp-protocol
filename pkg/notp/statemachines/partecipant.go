@@ -49,12 +49,12 @@ func createStatePacket(smType StateMachineType, isLeader bool, state, algorithm 
 }
 
 // createAndHandleStatePacket creates a state packet and handles it.
-func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16, packetables []notppackets.Packetable) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	packet, handlerCtx, err := createStatePacket(smType, isLeader, state, algorithm)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
-	retry, handledPacketables, err := runtime.Handle(handlerCtx, packet)
+	retry, handledPacketables, err := runtime.HandleStream(handlerCtx, packet, packetables)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 	}
@@ -62,8 +62,8 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType Stat
 }
 
 // createAndHandleAndStreamStatePacket creates a state packet and handles it.
-func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16) error {
-	_, packet, packetables, err := createAndHandleStatePacket(runtime, smType, isLeader, state, algorithm)
+func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16, packetables []notppackets.Packetable) error {
+	_, packet, packetables, err := createAndHandleStatePacket(runtime, smType, isLeader, state, algorithm, packetables)
 	if err != nil {
 		return fmt.Errorf("notp: failed to create and handle packet: %w", err)
 	}

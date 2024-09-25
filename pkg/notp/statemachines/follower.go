@@ -48,7 +48,7 @@ func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTra
 
 // followerPullRequestCurrentState handles the advertisement phase in the protocol for pull requests.
 func followerPullRequestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoFetchAll)
+	err := createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoFetchAll, nil)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
@@ -57,9 +57,13 @@ func followerPullRequestCurrentState(runtime *StateMachineRuntimeContext) (bool,
 
 // followerPullSubmitChangesetRequest handles the advertisement phase in the protocol for pull requests.
 func followerPullSubmitChangesetRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, _, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
+	_, _, packetables, err := receiveAndHandleStatePacket(runtime, PullStateMachineType, false, notpsmpackets.RespondCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+	}
+	err = createAndHandleAndStreamStatePacket(runtime, PullStateMachineType, false, notpsmpackets.SubmitNegotiationRequest, notpsmpackets.AlgoFetchAll, packetables)
+	if err != nil {
+		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}
 	return false, followerPullRequestCurrentState, nil
 }
