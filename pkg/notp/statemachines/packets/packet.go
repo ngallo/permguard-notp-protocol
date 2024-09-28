@@ -51,9 +51,9 @@ const (
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
-	StateCode  uint16
-	StateValue uint16
-	ErrorCode  uint16
+	MessageCode	 uint16
+	MessageValue uint16
+	ErrorCode    uint16
 }
 
 // GetType returns the packet type.
@@ -70,12 +70,12 @@ func (p *StatePacket) HasError() bool {
 func (p *StatePacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 
-	err := binary.Write(buffer, binary.BigEndian, p.StateCode)
+	err := binary.Write(buffer, binary.BigEndian, p.MessageCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write StateCode: %v", err)
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, p.StateValue)
+	err = binary.Write(buffer, binary.BigEndian, p.MessageValue)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write StateValue: %v", err)
 	}
@@ -92,12 +92,12 @@ func (p *StatePacket) Serialize() ([]byte, error) {
 func (p *StatePacket) Deserialize(data []byte) error {
 	buffer := bytes.NewBuffer(data)
 
-	err := binary.Read(buffer, binary.BigEndian, &p.StateCode)
+	err := binary.Read(buffer, binary.BigEndian, &p.MessageCode)
 	if err != nil {
 		return fmt.Errorf("failed to read StateCode: %v", err)
 	}
 
-	err = binary.Read(buffer, binary.BigEndian, &p.StateValue)
+	err = binary.Read(buffer, binary.BigEndian, &p.MessageValue)
 	if err != nil {
 		return fmt.Errorf("failed to read StateValue: %v", err)
 	}

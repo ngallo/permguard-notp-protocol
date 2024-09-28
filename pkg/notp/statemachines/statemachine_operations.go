@@ -24,20 +24,21 @@ import (
 )
 
 // createStatePacket creates a state packet.
-func createStatePacket(flow FlowType, state uint16) (*notpsmpackets.StatePacket, *HandlerContext, error) {
+func createStatePacket(flow FlowType, messageCode, messageValue uint16) (*notpsmpackets.StatePacket, *HandlerContext, error) {
 	handlerCtx := &HandlerContext{
 		flow: flow,
 	}
 	packet := &notpsmpackets.StatePacket{
-		StateCode: state,
-		ErrorCode: 0,
+		MessageCode: messageCode,
+		MessageValue: messageValue,
+		ErrorCode:   0,
 	}
 	return packet, handlerCtx, nil
 }
 
 // createAndHandleStatePacket creates a state packet and handles it.
-func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, state uint16, packetables []notppackets.Packetable) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
-	packet, handlerCtx, err := createStatePacket(runtime.GetFlowType(), state)
+func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode, messageValue uint16, packetables []notppackets.Packetable) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+	packet, handlerCtx, err := createStatePacket(runtime.GetFlowType(), messageCode, messageValue)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
@@ -49,8 +50,8 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, state uint1
 }
 
 // createAndHandleAndStreamStatePacket creates a state packet and handles it.
-func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, state uint16, packetables []notppackets.Packetable) error {
-	_, packet, packetables, err := createAndHandleStatePacket(runtime, state, packetables)
+func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, messageCode, messageValue uint16, packetables []notppackets.Packetable) error {
+	_, packet, packetables, err := createAndHandleStatePacket(runtime, messageCode, messageValue, packetables)
 	if err != nil {
 		return fmt.Errorf("notp: failed to create and handle packet: %w", err)
 	}
@@ -80,8 +81,8 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 	if statePacket.HasError() {
 		return false, nil, nil, fmt.Errorf("notp: received state packet with error: %d", statePacket.ErrorCode)
 	}
-	if statePacket.StateCode != expectedState {
-		return false, nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.StateCode)
+	if statePacket.MessageCode != expectedState {
+		return false, nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}
 	retry, handledPacketables, err := runtime.Handle(handlerCtx, statePacket)
 	if err != nil {
