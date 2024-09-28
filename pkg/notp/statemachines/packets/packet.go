@@ -28,26 +28,20 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// Represents a request to obtain the current state.
-	RequestCurrentState = uint16(111)
-	// Respond with the current state.
-	RespondCurrentState = uint16(112)
-	// Notify other parties about the current state.
-	NotifyCurrentState = uint16(113)
+	// NotifyCurrentState represents the notification of the current state.
+	NotifyCurrentState = uint16(101)
+	// RequestCurrentState represents the request for the current state.
+	RequestCurrentState = uint16(102)
+	// RespondCurrentState represents the response to the request for the current state.
+	RespondCurrentState = uint16(103)
 
-	// Submit a request to initiate a negotiation process.
-	SubmitNegotiationRequest = uint16(114)
-	// Respond to reject the submitted negotiation request.
-	RejectNegotiationRequest = uint16(115)
-	// Approve the submitted negotiation request.
-	ApproveNegotiationRequest = uint16(116)
+	// SubmitNegotiationRequest represents the submission of a negotiation request.
+	SubmitNegotiationRequest = uint16(124)
+	// RespondNegotiationRequest represents the response to a negotiation request.
+	RespondNegotiationRequest = uint16(125)
 
-	// Start the data streaming process.
-	InitiateDataStream = uint16(117)
-	// Continue sending data within the ongoing stream.
-	ContinueDataStream = uint16(118)
-	// Conclude the data streaming process.
-	ConcludeDataStream = uint16(119)
+	// ExchangeDataStream represents the exchange of data stream.
+	ExchangeDataStream = uint16(146)
 )
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
