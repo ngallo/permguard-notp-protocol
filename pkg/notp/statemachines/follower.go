@@ -38,9 +38,9 @@ func NewFollowerStateMachine(smtype StateMachineType, hostHandler HostHandler, t
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	switch runtime.GetStateMachineType() {
 	case PushStateMachineType:
-		return false, notifyCurrentState, nil
+		return false, notifyObjectsState, nil
 	case PullStateMachineType:
-		return false, requestCurrentState, nil
+		return false, requestObjectsState, nil
 	}
 	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
 }
