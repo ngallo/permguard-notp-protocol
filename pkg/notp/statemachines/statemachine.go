@@ -61,6 +61,16 @@ type StateMachineRuntimeContext struct {
 	hostHandler    HostHandler
 }
 
+// WithFlow returns the state machine runtime context with the flow type.
+func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRuntimeContext {
+	return &StateMachineRuntimeContext{
+		flow:           flowType,
+		transportLayer: t.transportLayer,
+		initialState:   t.initialState,
+		hostHandler:    t.hostHandler,
+	}
+}
+
 // GetFlowType returns the flow type of the state machine.
 func (t *StateMachineRuntimeContext) GetFlowType() FlowType {
 	return t.flow
