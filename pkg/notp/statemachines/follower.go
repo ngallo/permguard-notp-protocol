@@ -19,7 +19,6 @@ package statemachines
 import (
 	"fmt"
 
-	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -39,31 +38,9 @@ func NewFollowerStateMachine(smtype StateMachineType, hostHandler HostHandler, t
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	switch runtime.GetStateMachineType() {
 	case PushStateMachineType:
-		return false, nil, fmt.Errorf("notp: not implemented operation type: %s", runtime.GetStateMachineType())
+		return false, notifyCurrentState, nil
 	case PullStateMachineType:
 		return false, requestCurrentState, nil
 	}
 	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
-}
-
-// requestCurrentState state to request the current state.
-func requestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NotifyCurrentState, nil)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
-	}
-	return false, submitNegotiationRequest, nil
-}
-
-// submitNegotiationRequest state to submit negotiation request.
-func submitNegotiationRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentState)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
-	}
-	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.SubmitNegotiationRequest, packetables)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
-	}
-	return false, FinalState, nil
 }

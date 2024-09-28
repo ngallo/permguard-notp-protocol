@@ -19,7 +19,6 @@ package statemachines
 import (
 	"fmt"
 
-	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 	notptransport "github.com/permguard/permguard-notp-protocol/pkg/notp/transport"
 )
 
@@ -39,22 +38,9 @@ func NewLeaderStateMachine(smType StateMachineType, hostHandler HostHandler, tra
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	switch runtime.GetStateMachineType() {
 	case PushStateMachineType:
-		return false, nil, fmt.Errorf("notp: not implemented operation type: %s", runtime.GetStateMachineType())
+		return false, submitNegotiationRequest, nil
 	case PullStateMachineType:
-		return false, notifyCurrentState, nil
+		return false, respondeCurrentState, nil
 	}
 	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
-}
-
-// notifyCurrentState state to notify the current state.
-func notifyCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.NotifyCurrentState)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
-	}
-	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondCurrentState, packetables)
-	if err != nil {
-		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
-	}
-	return false, FinalState, nil
 }
