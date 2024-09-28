@@ -49,7 +49,7 @@ func notifyCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransit
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
 	}
-	return false, submitNegotiationRequest, nil
+	return false, handleNegotiationResponse, nil
 }
 
 // respondeCurrentState state to respond to the current state.
