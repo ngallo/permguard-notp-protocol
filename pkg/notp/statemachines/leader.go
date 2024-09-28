@@ -38,9 +38,9 @@ func NewLeaderStateMachine(smType StateMachineType, hostHandler HostHandler, tra
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	switch runtime.GetStateMachineType() {
 	case PushStateMachineType:
-		return false, submitNegotiationRequest, nil
+		return false, respondNegotiationRequest, nil
 	case PullStateMachineType:
-		return false, respondeCurrentState, nil
+		return false, respondCurrentState, nil
 	}
 	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
 }

@@ -40,7 +40,7 @@ func requestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransi
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
-	return false, submitNegotiationRequest, nil
+	return false, respondNegotiationRequest, nil
 }
 
 // notifyCurrentState state to notify the current state.
@@ -52,8 +52,8 @@ func notifyCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransit
 	return false, handleNegotiationResponse, nil
 }
 
-// respondeCurrentState state to respond to the current state.
-func respondeCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+// respondCurrentState state to respond to the current state.
+func respondCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RequestCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle request current state packet: %w", err)
@@ -65,8 +65,8 @@ func respondeCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTrans
 	return false, FinalState, nil
 }
 
-// submitNegotiationRequest state to submit negotiation request.
-func submitNegotiationRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
+// respondNegotiationRequest state to submit negotiation request.
+func respondNegotiationRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
 	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
