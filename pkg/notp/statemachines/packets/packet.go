@@ -36,17 +36,18 @@ const (
 	RespondCurrentState = uint16(103)
 
 	// SubmitNegotiationRequest represents the submission of a negotiation request.
-	SubmitNegotiationRequest = uint16(124)
+	SubmitNegotiationRequest = uint16(131)
 	// RespondNegotiationRequest represents the response to a negotiation request.
-	RespondNegotiationRequest = uint16(125)
+	RespondNegotiationRequest = uint16(132)
 
 	// ExchangeDataStream represents the exchange of data stream.
-	ExchangeDataStream = uint16(146)
+	ExchangeDataStream = uint16(160)
 )
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
 	StateCode     uint16
+	StateValue    uint16
 	ErrorCode     uint16
 }
 
@@ -66,7 +67,12 @@ func (p *StatePacket) Serialize() ([]byte, error) {
 
 	err := binary.Write(buffer, binary.BigEndian, p.StateCode)
 	if err != nil {
-		return nil, fmt.Errorf("failed to write OperationCode: %v", err)
+		return nil, fmt.Errorf("failed to write StateCode: %v", err)
+	}
+
+	err = binary.Write(buffer, binary.BigEndian, p.StateValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write StateValue: %v", err)
 	}
 
 	err = binary.Write(buffer, binary.BigEndian, p.ErrorCode)
@@ -83,7 +89,12 @@ func (p *StatePacket) Deserialize(data []byte) error {
 
 	err := binary.Read(buffer, binary.BigEndian, &p.StateCode)
 	if err != nil {
-		return fmt.Errorf("failed to read OperationCode: %v", err)
+		return fmt.Errorf("failed to read StateCode: %v", err)
+	}
+
+	err = binary.Read(buffer, binary.BigEndian, &p.StateValue)
+	if err != nil {
+		return fmt.Errorf("failed to read StateValue: %v", err)
 	}
 
 	err = binary.Read(buffer, binary.BigEndian, &p.ErrorCode)

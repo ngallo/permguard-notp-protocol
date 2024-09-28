@@ -93,7 +93,7 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 		start := w.protocolEndIndex + 1
 		_, _, _, packetStream, _ := indexDataStreamPacket(start, w.packet.Data)
 		packetStream++
-		binary.LittleEndian.PutUint64(w.packet.Data[start:], packetStream)
+		binary.BigEndian.PutUint64(w.packet.Data[start:], packetStream)
 	}
 	w.streamEndIndex = len(w.packet.Data) - 1
 	return nil

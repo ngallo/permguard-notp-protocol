@@ -34,7 +34,7 @@ func (p *ProtocolPacket) GetType() uint64 {
 // Serialize serializes the packet.
 func (p *ProtocolPacket) Serialize() ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
-	if err := binary.Write(buffer, binary.LittleEndian, p.Version); err != nil {
+	if err := binary.Write(buffer, binary.BigEndian, p.Version); err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
@@ -43,7 +43,7 @@ func (p *ProtocolPacket) Serialize() ([]byte, error) {
 // Deserialize deserializes the packet.
 func (p *ProtocolPacket) Deserialize(data []byte) error {
 	buffer := bytes.NewBuffer(data)
-	if err := binary.Read(buffer, binary.LittleEndian, &p.Version); err != nil {
+	if err := binary.Read(buffer, binary.BigEndian, &p.Version); err != nil {
 		return err
 	}
 	return nil
