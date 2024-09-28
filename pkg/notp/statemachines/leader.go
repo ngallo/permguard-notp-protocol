@@ -32,6 +32,6 @@ func NewLeaderStateMachine(hostHandler HostHandler, transportLayer *notptranspor
 }
 
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
-func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, processStartFlow, nil
+func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+	return runtime, processStartFlow, nil
 }

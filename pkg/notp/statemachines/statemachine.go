@@ -41,7 +41,7 @@ type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, []notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
-type StateTransitionFunc func(runtime *StateMachineRuntimeContext) (isFinal bool, nextState StateTransitionFunc, err error)
+type StateTransitionFunc func(runtimeIn *StateMachineRuntimeContext) (runtimeOut *StateMachineRuntimeContext, nextState StateTransitionFunc, err error)
 
 // InitialState defines the initial state of the state machine.
 func InitialState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
@@ -49,26 +49,44 @@ func InitialState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFun
 }
 
 // FinalState defines the final state of the state machine.
-func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return true, nil, nil
+func FinalState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+	return runtime, nil, nil
 }
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	flow		   FlowType
-	transportLayer *notptransport.TransportLayer
-	initialState   StateTransitionFunc
-	hostHandler    HostHandler
+	isFinale 		bool
+	flow		   	FlowType
+	transportLayer 	*notptransport.TransportLayer
+	initialState   	StateTransitionFunc
+	hostHandler    	HostHandler
 }
 
 // WithFlow returns the state machine runtime context with the flow type.
 func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
+		isFinale:       t.isFinale,
 		flow:           flowType,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
 		hostHandler:    t.hostHandler,
 	}
+}
+
+// WithFinal returns the state machine runtime context with the final state.
+func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
+	return &StateMachineRuntimeContext{
+		isFinale:       true,
+		flow:           t.flow,
+		transportLayer: t.transportLayer,
+		initialState:   t.initialState,
+		hostHandler:    t.hostHandler,
+	}
+}
+
+// IsFinal returns true if the state machine is in the final state.
+func (t *StateMachineRuntimeContext) IsFinal() bool {
+	return t.isFinale
 }
 
 // GetFlowType returns the flow type of the state machine.
@@ -125,13 +143,15 @@ type StateMachine struct {
 
 // Run starts and runs the state machine through its states until termination.
 func (m *StateMachine) Run() error {
-	state := m.runtime.initialState
+	runtime := m.runtime
+	state := runtime.initialState
 	for state != nil {
-		isFinal, nextState, err := state(m.runtime)
+		runtimeOut, nextState, err := state(runtime)
+		runtime = runtimeOut
 		if err != nil {
 			return err
 		}
-		if isFinal {
+		if runtime.IsFinal() {
 			break
 		}
 		state = nextState

@@ -32,6 +32,6 @@ func NewFollowerStateMachine(hostHandler HostHandler, transportLayer *notptransp
 }
 
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
-func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	return false, startFlow, nil
+func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+	return runtime, startFlow, nil
 }
