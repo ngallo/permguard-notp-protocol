@@ -23,11 +23,8 @@ import (
 )
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
-func NewFollowerStateMachine(smtype StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	if smtype == "" {
-		smtype = DefaultStateMachineType
-	}
-	stateMachine, err := NewStateMachine(smtype, FollowerAdvertiseState, hostHandler, transportLayer)
+func NewFollowerStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	stateMachine, err := NewStateMachine(FollowerAdvertiseState, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
 	}
@@ -36,11 +33,5 @@ func NewFollowerStateMachine(smtype StateMachineType, hostHandler HostHandler, t
 
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	switch runtime.GetStateMachineType() {
-	case PushStateMachineType:
-		return false, notifyObjectsState, nil
-	case PullStateMachineType:
-		return false, requestObjectsState, nil
-	}
-	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
+	return false, startFlow, nil
 }

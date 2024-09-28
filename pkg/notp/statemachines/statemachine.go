@@ -26,12 +26,12 @@ import (
 
 // HandlerContext holds the context of the handler.
 type HandlerContext struct {
-	stateMachineType StateMachineType
+	flow FlowType
 }
 
-// GetStateMachineType returns the state machine type of the handler.
-func (h *HandlerContext) GetStateMachineType() StateMachineType {
-	return h.stateMachineType
+// GetFlowType returns the flow type of the handler context.
+func (h *HandlerContext) GetFlowType() FlowType {
+	return h.flow
 }
 
 // PacketCreatorFunc is a function that creates a packet.
@@ -55,15 +55,15 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	stateMachinetype StateMachineType
-	transportLayer   *notptransport.TransportLayer
-	initialState     StateTransitionFunc
-	hostHandler      HostHandler
+	flow		   FlowType
+	transportLayer *notptransport.TransportLayer
+	initialState   StateTransitionFunc
+	hostHandler    HostHandler
 }
 
-// GetStateMachineType returns the operation type of the state machine.
-func (t *StateMachineRuntimeContext) GetStateMachineType() StateMachineType {
-	return t.stateMachinetype
+// GetFlowType returns the flow type of the state machine.
+func (t *StateMachineRuntimeContext) GetFlowType() FlowType {
+	return t.flow
 }
 
 // Send sends a packet through the transport layer.
@@ -130,7 +130,7 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(smType StateMachineType, initialState StateTransitionFunc, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(initialState StateTransitionFunc, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
@@ -142,10 +142,9 @@ func NewStateMachine(smType StateMachineType, initialState StateTransitionFunc, 
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
-			stateMachinetype: smType,
-			transportLayer:   transportLayer,
-			initialState:     initialState,
-			hostHandler:      hostHandler,
+			transportLayer: transportLayer,
+			initialState:   initialState,
+			hostHandler:    hostHandler,
 		},
 	}, nil
 }

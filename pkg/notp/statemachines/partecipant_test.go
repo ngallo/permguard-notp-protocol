@@ -40,7 +40,7 @@ type stateMachinesInfo struct {
 }
 
 // buildCommitStateMachines initializes and returns the follower and leader state machines.
-func buildCommitStateMachines(assert *assert.Assertions, operationType StateMachineType, followerHandler HostHandler, leaderHandler HostHandler) *stateMachinesInfo {
+func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHandler, leaderHandler HostHandler) *stateMachinesInfo {
 	sMInfo := &stateMachinesInfo{
 		followerSent:     []notppackets.Packet{},
 		followerReceived: []notppackets.Packet{},
@@ -77,11 +77,11 @@ func buildCommitStateMachines(assert *assert.Assertions, operationType StateMach
 	leaderTransport, err := notptransport.NewTransportLayer(followerStream.TransmitPacket, leaderStream.ReceivePacket, leaderPacketLogger)
 	assert.Nil(err, "Failed to initialize the leader transport layer")
 
-	followerSMachine, err := NewFollowerStateMachine(operationType, followerHandler, followerTransport)
+	followerSMachine, err := NewFollowerStateMachine(followerHandler, followerTransport)
 	assert.Nil(err, "Failed to initialize the follower state machine")
 	sMInfo.follower = followerSMachine
 
-	leaderSMachine, err := NewLeaderStateMachine(operationType, leaderHandler, leaderTransport)
+	leaderSMachine, err := NewLeaderStateMachine(leaderHandler, leaderTransport)
 	assert.Nil(err, "Failed to initialize the leader state machine")
 	sMInfo.leader = leaderSMachine
 
@@ -98,7 +98,7 @@ func TestPullProtocolExecution(t *testing.T) {
 	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
 		return false, packets, nil
 	}
-	sMInfo := buildCommitStateMachines(assert, PullStateMachineType, followerHandler, leaderHandler)
+	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
 
 	var wg sync.WaitGroup
 	wg.Add(2)

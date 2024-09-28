@@ -23,11 +23,8 @@ import (
 )
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
-func NewLeaderStateMachine(smType StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	if smType == "" {
-		smType = DefaultStateMachineType
-	}
-	stateMachine, err := NewStateMachine(smType, LeaderAdvertiseState, hostHandler, transportLayer)
+func NewLeaderStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	stateMachine, err := NewStateMachine(LeaderAdvertiseState, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
 	}
@@ -36,11 +33,5 @@ func NewLeaderStateMachine(smType StateMachineType, hostHandler HostHandler, tra
 
 // LeaderAdvertiseState handles the advertisement phase in the protocol.
 func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	switch runtime.GetStateMachineType() {
-	case PushStateMachineType:
-		return false, subscriberNegotiationState, nil
-	case PullStateMachineType:
-		return false, processRequestObjectsState, nil
-	}
-	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
+	return false, processStartFlow, nil
 }

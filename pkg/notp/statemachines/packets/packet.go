@@ -28,27 +28,32 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// NotifyCurrentState represents the notification of the current state.
-	NotifyCurrentState = uint16(101)
-	// RequestCurrentState represents the request for the current state.
-	RequestCurrentState = uint16(102)
-	// RespondCurrentState represents the response to the request for the current state.
-	RespondCurrentState = uint16(103)
+	// StartFlowMessage represents the notification of the flow.
+	StartFlowMessage = uint16(100)
+	// ActionResponseMessage represents the response to an action.
+	ActionResponseMessage = uint16(101)
 
-	// SubmitNegotiationRequest represents the submission of a negotiation request.
-	SubmitNegotiationRequest = uint16(131)
-	// RespondNegotiationRequest represents the response to a negotiation request.
-	RespondNegotiationRequest = uint16(132)
+	// NotifyCurrentObjectStatesMessage represents the notification of the current object states.
+	NotifyCurrentObjectStatesMessage = uint16(111)
+	// RequestCurrentObjectsStateMessage represents the request for the current state.
+	RequestCurrentObjectsStateMessage = uint16(112)
+	// RespondCurrentStateMessage represents the response to the current state.
+	RespondCurrentStateMessage = uint16(113)
 
-	// ExchangeDataStream represents the exchange of data stream.
-	ExchangeDataStream = uint16(160)
+	// NegotiationRequestMessage represents the negotiation request.
+	NegotiationRequestMessage = uint16(141)
+	// RespondNegotiationRequestMessage represents the response to the negotiation request.
+	RespondNegotiationRequestMessage = uint16(142)
+
+	// ExchangeDataStreamMessage represents the exchange of data stream.
+	ExchangeDataStreamMessage = uint16(170)
 )
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
-	StateCode     uint16
-	StateValue    uint16
-	ErrorCode     uint16
+	StateCode  uint16
+	StateValue uint16
+	ErrorCode  uint16
 }
 
 // GetType returns the packet type.
