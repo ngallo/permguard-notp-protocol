@@ -28,9 +28,6 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// AlgoNone represents no algorithm.
-	AlgoNone = uint16(101)
-
 	// Represents a request to obtain the current state.
 	RequestCurrentState = uint16(111)
 	// Respond with the current state.
@@ -56,7 +53,6 @@ const (
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
 	StateCode     uint16
-	AlgorithmCode uint16
 	ErrorCode     uint16
 }
 
@@ -79,11 +75,6 @@ func (p *StatePacket) Serialize() ([]byte, error) {
 		return nil, fmt.Errorf("failed to write OperationCode: %v", err)
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, p.AlgorithmCode)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write AlgorithmCode: %v", err)
-	}
-
 	err = binary.Write(buffer, binary.BigEndian, p.ErrorCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write ErrorCode: %v", err)
@@ -99,11 +90,6 @@ func (p *StatePacket) Deserialize(data []byte) error {
 	err := binary.Read(buffer, binary.BigEndian, &p.StateCode)
 	if err != nil {
 		return fmt.Errorf("failed to read OperationCode: %v", err)
-	}
-
-	err = binary.Read(buffer, binary.BigEndian, &p.AlgorithmCode)
-	if err != nil {
-		return fmt.Errorf("failed to read AlgorithmCode: %v", err)
 	}
 
 	err = binary.Read(buffer, binary.BigEndian, &p.ErrorCode)

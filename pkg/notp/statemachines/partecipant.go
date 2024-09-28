@@ -18,6 +18,7 @@ package statemachines
 
 import (
 	"fmt"
+
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 )
@@ -30,27 +31,25 @@ const (
 	PushStateMachineType StateMachineType = "push"
 	// PullStateMachineType represents the pull state machine type.
 	PullStateMachineType StateMachineType = "pull"
-	// DefaultOperation represents the default operation type.
-	DefaultOperation StateMachineType = PushStateMachineType
+	// DefaultStateMachineType represents the default operation type.
+	DefaultStateMachineType StateMachineType = PushStateMachineType
 )
 
 // createStatePacket creates a state packet.
-func createStatePacket(smType StateMachineType, isLeader bool, state, algorithm uint16) (*notpsmpackets.StatePacket, *HandlerContext, error) {
+func createStatePacket(smType StateMachineType, state uint16) (*notpsmpackets.StatePacket, *HandlerContext, error) {
 	handlerCtx := &HandlerContext{
 		stateMachineType: smType,
-		isLeader:         isLeader,
 	}
 	packet := &notpsmpackets.StatePacket{
-		StateCode:     state,
-		AlgorithmCode: algorithm,
-		ErrorCode:     0,
+		StateCode: state,
+		ErrorCode: 0,
 	}
 	return packet, handlerCtx, nil
 }
 
 // createAndHandleStatePacket creates a state packet and handles it.
-func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16, packetables []notppackets.Packetable) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
-	packet, handlerCtx, err := createStatePacket(smType, isLeader, state, algorithm)
+func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, state uint16, packetables []notppackets.Packetable) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+	packet, handlerCtx, err := createStatePacket(runtime.GetStateMachineType(), state)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
@@ -62,8 +61,8 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType Stat
 }
 
 // createAndHandleAndStreamStatePacket creates a state packet and handles it.
-func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, state, algorithm uint16, packetables []notppackets.Packetable) error {
-	_, packet, packetables, err := createAndHandleStatePacket(runtime, smType, isLeader, state, algorithm, packetables)
+func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, state uint16, packetables []notppackets.Packetable) error {
+	_, packet, packetables, err := createAndHandleStatePacket(runtime, state, packetables)
 	if err != nil {
 		return fmt.Errorf("notp: failed to create and handle packet: %w", err)
 	}
@@ -73,16 +72,15 @@ func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, sm
 }
 
 // receiveAndHandleStatePacket receives a state packet and handles it.
-func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, smType StateMachineType, isLeader bool, expectedState uint16) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedState uint16) (bool, *notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	handlerCtx := &HandlerContext{
-		stateMachineType: smType,
-		isLeader:         isLeader,
+		stateMachineType: runtime.GetStateMachineType(),
 	}
 	packetsStream, err := runtime.ReceiveStream()
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to receive packets: %w", err)
 	}
-	statePacket := &notpsmpackets.StatePacket {}
+	statePacket := &notpsmpackets.StatePacket{}
 	data, err := packetsStream[0].Serialize()
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("notp: failed to serialize packet: %w", err)

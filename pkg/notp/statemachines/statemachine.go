@@ -27,17 +27,11 @@ import (
 // HandlerContext holds the context of the handler.
 type HandlerContext struct {
 	stateMachineType StateMachineType
-	isLeader         bool
 }
 
 // GetStateMachineType returns the state machine type of the handler.
 func (h *HandlerContext) GetStateMachineType() StateMachineType {
 	return h.stateMachineType
-}
-
-// IsLeader returns whether the handler is a leader.
-func (h *HandlerContext) IsLeader() bool {
-	return h.isLeader
 }
 
 // PacketCreatorFunc is a function that creates a packet.
@@ -61,15 +55,15 @@ func FinalState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc,
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	operation      StateMachineType
-	transportLayer *notptransport.TransportLayer
-	initialState   StateTransitionFunc
-	hostHandler    HostHandler
+	stateMachinetype StateMachineType
+	transportLayer   *notptransport.TransportLayer
+	initialState     StateTransitionFunc
+	hostHandler      HostHandler
 }
 
-// GetOperation returns the operation type of the state machine.
-func (t *StateMachineRuntimeContext) GetOperation() StateMachineType {
-	return t.operation
+// GetStateMachineType returns the operation type of the state machine.
+func (t *StateMachineRuntimeContext) GetStateMachineType() StateMachineType {
+	return t.stateMachinetype
 }
 
 // Send sends a packet through the transport layer.
@@ -136,7 +130,7 @@ func (m *StateMachine) Run() error {
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(operation StateMachineType, initialState StateTransitionFunc, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+func NewStateMachine(smType StateMachineType, initialState StateTransitionFunc, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
 	if initialState == nil {
 		return nil, errors.New("notp: initial state cannot be nil")
 	}
@@ -148,10 +142,10 @@ func NewStateMachine(operation StateMachineType, initialState StateTransitionFun
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
-			operation:      operation,
-			transportLayer: transportLayer,
-			initialState:   initialState,
-			hostHandler:    hostHandler,
+			stateMachinetype: smType,
+			transportLayer:   transportLayer,
+			initialState:     initialState,
+			hostHandler:      hostHandler,
 		},
 	}, nil
 }

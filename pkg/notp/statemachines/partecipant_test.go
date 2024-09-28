@@ -17,6 +17,7 @@
 package statemachines
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -99,14 +100,25 @@ func TestPullProtocolExecution(t *testing.T) {
 	}
 	sMInfo := buildCommitStateMachines(assert, PullStateMachineType, followerHandler, leaderHandler)
 
-	err := sMInfo.follower.Run()
-	assert.Nil(err, "Failed to run the follower state machine")
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	err = sMInfo.leader.Run()
-	assert.Nil(err, "Failed to run the leader state machine")
+	go func() {
+		defer wg.Done()
+		err := sMInfo.follower.Run()
+		assert.Nil(err, "Failed to run the follower state machine")
+	}()
 
-	assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
-	assert.Len(sMInfo.followerReceived, 0, "Follower received packets")
-	assert.Len(sMInfo.leaderSent, 0, "Leader sent packets")
+	go func() {
+		defer wg.Done()
+		err := sMInfo.leader.Run()
+		assert.Nil(err, "Failed to run the leader state machine")
+	}()
+
+	wg.Wait()
+
+	assert.Len(sMInfo.followerSent, 2, "Follower sent packets")
+	assert.Len(sMInfo.followerReceived, 1, "Follower received packets")
+	assert.Len(sMInfo.leaderSent, 1, "Leader sent packets")
 	assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
 }

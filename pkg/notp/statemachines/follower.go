@@ -24,11 +24,11 @@ import (
 )
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
-func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	if operation == "" {
-		operation = DefaultOperation
+func NewFollowerStateMachine(smtype StateMachineType, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	if smtype == "" {
+		smtype = DefaultStateMachineType
 	}
-	stateMachine, err := NewStateMachine(operation, FollowerAdvertiseState, hostHandler, transportLayer)
+	stateMachine, err := NewStateMachine(smtype, FollowerAdvertiseState, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
 	}
@@ -37,31 +37,31 @@ func NewFollowerStateMachine(operation StateMachineType, hostHandler HostHandler
 
 // FollowerAdvertiseState handles the advertisement phase in the protocol.
 func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	switch runtime.GetOperation() {
+	switch runtime.GetStateMachineType() {
 	case PushStateMachineType:
-		return false, requestCurrentState, nil
+		return false, nil, fmt.Errorf("notp: not implemented operation type: %s", runtime.GetStateMachineType())
 	case PullStateMachineType:
 		return false, requestCurrentState, nil
 	}
-	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetOperation())
+	return false, nil, fmt.Errorf("notp: unknown operation type: %s", runtime.GetStateMachineType())
 }
 
 // requestCurrentState state to request the current state.
 func requestCurrentState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.NotifyCurrentState, notpsmpackets.AlgoNone, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NotifyCurrentState, nil)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
-	return false, requestCurrentState, nil
+	return false, submitNegotiationRequest, nil
 }
 
 // submitNegotiationRequest state to submit negotiation request.
 func submitNegotiationRequest(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.RespondCurrentState)
+	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentState)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacket(runtime, runtime.GetOperation(), false, notpsmpackets.SubmitNegotiationRequest, notpsmpackets.AlgoNone, packetables)
+	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.SubmitNegotiationRequest, packetables)
 	if err != nil {
 		return false, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}
