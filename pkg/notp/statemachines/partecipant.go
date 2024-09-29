@@ -34,6 +34,29 @@ const (
 	PullFlowType FlowType = 2
 	// DefaultFlowType represents the default operation type.
 	DefaultFlowType FlowType = PushFlowType
+
+	// startFlowStateID represents the state ID for the start flow state.
+	startFlowStateID = uint16(10)
+	// processStartFlowStateID represents the state ID for the process start flow state.
+	processStartFlowStateID = uint16(11)
+	// notifyProtocolStateID represents the state ID for the notify protocol state.
+	notifyProtocolStateID = uint16(12)
+	// requestObjectsStateID represents the state ID for the request objects state.
+	requestObjectsStateID = uint16(13)
+	// processRequestObjectsStateID represents the state ID for the process request objects state.
+	processRequestObjectsStateID = uint16(14)
+	// notifyObjectsStateID represents the state ID for the notify objects state.
+	notifyObjectsStateID = uint16(15)
+	// processNotifyObjectsStateID represents the state ID for the process notify objects state.
+	processNotifyObjectsStateID = uint16(16)
+	// publisherNegotiationStateID represents the state ID for the publisher negotiation state.
+	publisherNegotiationStateID = uint16(17)
+	// publisherDataStreamStateID represents the state ID for the publisher data stream state.
+	publisherDataStreamStateID = uint16(18)
+	// subscriberNegotiationStateID represents the state ID for the subscriber negotiation state.
+	subscriberNegotiationStateID = uint16(19)
+	// subscriberDataStreamStateID represents the state ID for the subscriber data stream state.
+	subscriberDataStreamStateID = uint16(20)
 )
 
 // startFlowState state to start the flow.
@@ -51,7 +74,7 @@ func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, 
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: subscriberNegotiationState,
+		StateID: subscriberNegotiationStateID,
 	}, nil
 }
 
@@ -67,7 +90,7 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: FinalState,
+		StateID: FinalStateID,
 	}, nil
 }
 
@@ -83,7 +106,7 @@ func notifyProtocolState(runtime *StateMachineRuntimeContext) (*StateTransitionI
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: subscriberNegotiationState,
+		StateID: subscriberNegotiationStateID,
 	}, nil
 }
 
@@ -99,7 +122,7 @@ func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionI
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: subscriberNegotiationState,
+		StateID: subscriberNegotiationStateID,
 	}, nil
 }
 
@@ -115,7 +138,7 @@ func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateTran
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: FinalState,
+		StateID: FinalStateID,
 	}, nil
 }
 
@@ -127,7 +150,7 @@ func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionIn
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: publisherNegotiationState,
+		StateID: publisherNegotiationStateID,
 	}, nil
 }
 
@@ -144,7 +167,7 @@ func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateTran
 	}
 	return &StateTransitionInfo{
 		Runtime:   runtime,
-		NextState: FinalState,
+		StateID: FinalStateID,
 	}, nil
 }
 
