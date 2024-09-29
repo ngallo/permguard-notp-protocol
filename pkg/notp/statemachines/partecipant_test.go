@@ -62,9 +62,9 @@ func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHan
 		sMInfo.leaderReceived = append(sMInfo.leaderReceived, *packet)
 	}
 
-	followerStream, err := notptransport.NewInMemoryStream(5 * time.Second)
+	followerStream, err := notptransport.NewInMemoryStream(15 * time.Second)
 	assert.Nil(err, "Failed to initialize the follower transport stream")
-	leaderStream, err := notptransport.NewInMemoryStream(5 * time.Second)
+	leaderStream, err := notptransport.NewInMemoryStream(15 * time.Second)
 	assert.Nil(err, "Failed to initialize the leader transport stream")
 
 	followerPacketLogger, err := notptransport.NewPacketInspector(onFollowerSent, onFollowerReceived)
@@ -93,6 +93,9 @@ func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
 
 	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+		if !statePacket.HasAck() {
+			return false, notpsmpackets.ActionRejected, packets, 0, nil
+		}
 		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
 	}
 	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {

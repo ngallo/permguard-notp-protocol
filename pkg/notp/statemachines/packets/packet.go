@@ -75,7 +75,7 @@ func (p *StatePacket) GetMessageValue() uint64 {
 
 // HasAck returns true if the packet has an acknowledgment.
 func (p *StatePacket) HasAck() bool {
-	return p.MessageValue  == ActionAcknowledged && !p.HasError()
+	return p.MessageValue == ActionAcknowledged && !p.HasError()
 }
 
 // GetType returns the packet type.
