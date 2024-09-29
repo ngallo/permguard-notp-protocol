@@ -38,7 +38,7 @@ func (h *HandlerContext) GetFlowType() FlowType {
 type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 
 // HostHandler defines a function type for handling packet.
-type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, []notppackets.Packetable, error)
+type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, error)
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
 type StateTransitionFunc func(runtimeIn *StateMachineRuntimeContext) (runtimeOut *StateMachineRuntimeContext, nextState StateTransitionFunc, err error)
@@ -139,12 +139,12 @@ func (t *StateMachineRuntimeContext) ReceiveStream() ([]notppackets.Packetable, 
 }
 
 // Handle handles the packet for the state machine.
-func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket) (bool, []notppackets.Packetable, error) {
+func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket) (bool, uint64, []notppackets.Packetable, error) {
 	return t.HandleStream(handlerCtx, statePacket, nil)
 }
 
 // HandleStream handles a packet stream for the state machine.
-func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packetables []notppackets.Packetable) (bool, []notppackets.Packetable, error) {
+func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packetables []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, error) {
 	if packetables == nil {
 		packetables = []notppackets.Packetable{}
 	}

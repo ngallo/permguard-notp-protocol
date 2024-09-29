@@ -52,8 +52,18 @@ const (
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
 	MessageCode	 uint16
-	MessageValue uint16
+	MessageValue uint64
 	ErrorCode    uint16
+}
+
+// GetMessageCode returns the message code.
+func (p *StatePacket) GetMessageCode() uint16 {
+	return p.MessageCode
+}
+
+// GetMessageValue returns the message value.
+func (p *StatePacket) GetMessageValue() uint64 {
+	return p.MessageValue
 }
 
 // GetType returns the packet type.
@@ -90,6 +100,10 @@ func (p *StatePacket) Serialize() ([]byte, error) {
 
 // Deserialize deserializes the packet from bytes.
 func (p *StatePacket) Deserialize(data []byte) error {
+	if len(data) < 12 {
+		return fmt.Errorf("buffer too small, need at least 12 bytes but got %d", len(data))
+	}
+
 	buffer := bytes.NewBuffer(data)
 
 	err := binary.Read(buffer, binary.BigEndian, &p.MessageCode)
