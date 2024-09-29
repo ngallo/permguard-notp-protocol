@@ -28,10 +28,12 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// ActionRejectedValue represents the value indicating that the action was rejected.
-	ActionRejectedValue = uint64(0)
-	// ActionAcknowledgedValue represents the value indicating that the action was acknowledged.
-	ActionAcknowledgedValue = uint64(1)
+	// ActionUnknown indicates that the action is unknown.
+	ActionUnknown = uint64(0)
+	// ActionRejected indicates that the action was rejected.
+	ActionRejected = uint64(1)
+	// ActionAcknowledged indicates that the action was acknowledged.
+	ActionAcknowledged = uint64(2)
 
 	// StartFlowMessage represents the notification of the flow.
 	StartFlowMessage = uint16(100)
@@ -73,7 +75,7 @@ func (p *StatePacket) GetMessageValue() uint64 {
 
 // HasAck returns true if the packet has an acknowledgment.
 func (p *StatePacket) HasAck() bool {
-	return p.MessageValue  == ActionAcknowledgedValue && !p.HasError()
+	return p.MessageValue  == ActionAcknowledged && !p.HasError()
 }
 
 // GetType returns the packet type.

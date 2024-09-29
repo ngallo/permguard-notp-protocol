@@ -51,8 +51,13 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 	return statePacket, handledPacketables, nil
 }
 
-// createAndHandleAndStreamStatePacket creates a state packet and handles it.
-func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) error {
+// createAndHandleAndStreamStatePacket creates a state packet, handles it, and streams it.
+func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, packetables []notppackets.Packetable) error {
+	return createAndHandleAndStreamStatePacketWithValue(runtime, messageCode, notpsmpackets.ActionUnknown, packetables)
+}
+
+// createAndHandleAndStreamStatePacketWithValue creates a state packet with value, handles it, and streams it.
+func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) error {
 	packet, packetables, err := createAndHandleStatePacket(runtime, messageCode, messageValue, packetables)
 	if err != nil {
 		return fmt.Errorf("notp: failed to create and handle packet: %w", err)

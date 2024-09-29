@@ -38,7 +38,7 @@ const (
 
 // notifyProtocol state to notify the protocol.
 func startFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.StartFlowMessage, 0, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.StartFlowMessage, nil)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
 	}
@@ -58,7 +58,7 @@ func processStartFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntime
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.ActionResponseMessage, 0, packetables)
+	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.ActionResponseMessage, packetables)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
 	}
@@ -67,7 +67,7 @@ func processStartFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntime
 
 // notifyProtocol state to notify the protocol.
 func notifyProtocol(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, 0, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, nil)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
@@ -80,7 +80,7 @@ func notifyProtocol(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeCo
 
 // requestObjectsState state to request the current state.
 func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, 0, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, nil)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
@@ -97,7 +97,7 @@ func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateMach
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle request current state packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage, 0, packetables)
+	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage, packetables)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
 	}
@@ -106,7 +106,7 @@ func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateMach
 
 // notifyObjectsState state to send the current state notification.
 func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NotifyCurrentObjectStatesMessage, 0, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NotifyCurrentObjectStatesMessage, nil)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
 	}
@@ -120,7 +120,7 @@ func processNotifyObjectsState(runtime *StateMachineRuntimeContext) (*StateMachi
 
 // submitNegotiationResponse state to submit negotiation response.
 func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NegotiationRequestMessage, 0, nil)
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NegotiationRequestMessage, nil)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}
