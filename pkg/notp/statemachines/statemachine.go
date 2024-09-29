@@ -55,17 +55,31 @@ func FinalState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContex
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	isFinale 		bool
+	inputValue		uint16
+	isFinal 		bool
 	flow		   	FlowType
 	transportLayer 	*notptransport.TransportLayer
 	initialState   	StateTransitionFunc
 	hostHandler    	HostHandler
 }
 
+// WithInput returns the state machine runtime context with the input value.
+func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineRuntimeContext {
+	return &StateMachineRuntimeContext{
+		inputValue:     inputValue,
+		isFinal:       t.isFinal,
+		flow:           t.flow,
+		transportLayer: t.transportLayer,
+		initialState:   t.initialState,
+		hostHandler:    t.hostHandler,
+	}
+}
+
 // WithFlow returns the state machine runtime context with the flow type.
 func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
-		isFinale:       t.isFinale,
+		inputValue:    	t.inputValue,
+		isFinal:       t.isFinal,
 		flow:           flowType,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
@@ -76,7 +90,8 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 // WithFinal returns the state machine runtime context with the final state.
 func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
-		isFinale:       true,
+		inputValue:     t.inputValue,
+		isFinal:       true,
 		flow:           t.flow,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
@@ -86,7 +101,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 
 // IsFinal returns true if the state machine is in the final state.
 func (t *StateMachineRuntimeContext) IsFinal() bool {
-	return t.isFinale
+	return t.isFinal
 }
 
 // GetFlowType returns the flow type of the state machine.
@@ -142,8 +157,9 @@ type StateMachine struct {
 }
 
 // Run starts and runs the state machine through its states until termination.
-func (m *StateMachine) Run() error {
+func (m *StateMachine) Run(inputValue FlowType) error {
 	runtime := m.runtime
+	runtime = runtime.WithFlow(FlowType(inputValue))
 	state := runtime.initialState
 	for state != nil {
 		runtimeOut, nextState, err := state(runtime)

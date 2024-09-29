@@ -23,13 +23,15 @@ import (
 )
 
 // FlowType represents the type of operation that the NOTP protocol is performing.
-type FlowType string
+type FlowType uint16
 
 const (
+	// UnknownFlowType represents an unknown state machine type.
+	UnknownFlowType FlowType = 0
 	// PushFlowType represents the push state machine type.
-	PushFlowType FlowType = "push"
+	PushFlowType FlowType = 1
 	// PullFlowType represents the pull state machine type.
-	PullFlowType FlowType = "pull"
+	PullFlowType FlowType = 2
 	// DefaultFlowType represents the default operation type.
 	DefaultFlowType FlowType = PushFlowType
 )
