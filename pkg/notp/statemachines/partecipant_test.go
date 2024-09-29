@@ -90,69 +90,84 @@ func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHan
 
 // TestPullProtocolExecution verifies the state machine execution for both follower and leader in the context of a pull operation.
 func TestPullProtocolExecution(t *testing.T) {
-	assert := assert.New(t)
+    assert := assert.New(t)
 
-	followerIDs := []uint16{}
-	leaderIDs := []uint16{}
+    tests := []struct {
+		name				string
+        flowType           	FlowType
+        expectedFollowerIDs []uint16
+        expectedLeaderIDs   []uint16
+    }{
+        {
+			name: "PullFlowType",
+            flowType: PullFlowType,
+            expectedFollowerIDs: []uint16{
+                StartFlowStateID,
+            },
+            expectedLeaderIDs: []uint16{
+                ProcessStartFlowStateID,
+            },
+        },
+    }
 
-	expectedFollowerIDs := []uint16{
-		StartFlowStateID,
-	}
+    for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			followerIDs := []uint16{}
+			leaderIDs := []uint16{}
 
-	expectedLeaderIDs := []uint16{
-		ProcessStartFlowStateID,
-	}
+			followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
+				currentStateID := handlerCtx.GetCurrentStateID()
+				followerIDs = append(followerIDs, currentStateID)
+				handlerReturn := &HostHandlerRuturn{
+					Packetables: packets,
+				}
+				if !statePacket.HasAck() {
+					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.RejectedValue, notpsmpackets.UnknownValue)
+				} else {
+					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
+				}
+				return handlerReturn, nil
+			}
 
-	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
-		currentStateID := handlerCtx.GetCurrentStateID()
-		followerIDs = append(followerIDs, currentStateID)
-		handlerReturn := &HostHandlerRuturn{
-			Packetables: packets,
-		}
-		if !statePacket.HasAck() {
-			handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.RejectedValue, notpsmpackets.UnknownValue)
-		} else {
-			handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
-		}
-		return handlerReturn, nil
-	}
-	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
-		currentStateID := handlerCtx.GetCurrentStateID()
-		leaderIDs = append(leaderIDs, currentStateID)
-		return &HostHandlerRuturn{
-			Packetables:  packets,
-			MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
-		}, nil
-	}
-	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
+			leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
+				currentStateID := handlerCtx.GetCurrentStateID()
+				leaderIDs = append(leaderIDs, currentStateID)
+				return &HostHandlerRuturn{
+					Packetables:  packets,
+					MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
+				}, nil
+			}
 
-	var wg sync.WaitGroup
-	wg.Add(2)
+			sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
 
-	go func() {
-		defer wg.Done()
-		err := sMInfo.follower.Run(PullFlowType)
-		assert.Nil(err, "Failed to run the follower state machine")
-	}()
+			var wg sync.WaitGroup
+			wg.Add(2)
 
-	go func() {
-		defer wg.Done()
-		err := sMInfo.leader.Run(UnknownFlowType)
-		assert.Nil(err, "Failed to run the leader state machine")
-	}()
+			go func() {
+				defer wg.Done()
+				err := sMInfo.follower.Run(test.flowType)
+				assert.Nil(err, "Failed to run the follower state machine")
+			}()
 
-	wg.Wait()
+			go func() {
+				defer wg.Done()
+				err := sMInfo.leader.Run(UnknownFlowType)
+				assert.Nil(err, "Failed to run the leader state machine")
+			}()
 
-	assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
-	assert.Len(sMInfo.followerReceived, 1, "Follower received packets")
-	assert.Len(sMInfo.leaderSent, 1, "Leader sent packets")
-	assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
+			wg.Wait()
 
-	for i, id := range followerIDs {
-		assert.Equal(expectedFollowerIDs[i], id, "Follower state ID")
-	}
+			assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
+			assert.Len(sMInfo.followerReceived, 1, "Follower received packets")
+			assert.Len(sMInfo.leaderSent, 1, "Leader sent packets")
+			assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
 
-	for i, id := range leaderIDs {
-		assert.Equal(expectedLeaderIDs[i], id, "Leader state ID")
-	}
+			for i, id := range followerIDs {
+				assert.Equal(test.expectedFollowerIDs[i], id, "Follower state ID")
+			}
+			for i, id := range leaderIDs {
+				assert.Equal(test.expectedLeaderIDs[i], id, "Leader state ID")
+			}
+		})
+    }
 }
