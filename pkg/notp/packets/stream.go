@@ -31,21 +31,21 @@ const (
 
 // encodeByteArry encodes a byte array to a base64 string.
 func encodeByteArry(data []byte) []byte {
-    var buf bytes.Buffer
-    encoder := base64.NewEncoder(base64.StdEncoding, &buf)
-    encoder.Write(data)
-    encoder.Close()
+	var buf bytes.Buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+	encoder.Write(data)
+	encoder.Close()
 	return buf.Bytes()
 }
 
 // decodeByteArry decodes a base64 string to a byte array.
 func decodeByteArry(data []byte) []byte {
-    var buf bytes.Buffer
-    decoder := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(data))
-    _, err := buf.ReadFrom(decoder)
-    if err != nil {
-        return data
-    }
+	var buf bytes.Buffer
+	decoder := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(data))
+	_, err := buf.ReadFrom(decoder)
+	if err != nil {
+		return data
+	}
 	return buf.Bytes()
 }
 
