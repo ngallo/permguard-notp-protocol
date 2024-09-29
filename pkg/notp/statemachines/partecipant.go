@@ -42,7 +42,7 @@ func startFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
 	}
-	_, _, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.ActionResponseMessage)
+	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.ActionResponseMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle action response packet: %w", err)
 	}
@@ -51,7 +51,7 @@ func startFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext
 
 // processStartFlow state to process the start flow.
 func processStartFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.StartFlowMessage)
+	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.StartFlowMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
@@ -68,7 +68,7 @@ func notifyProtocol(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeCo
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
-	_, _, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
+	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
@@ -81,7 +81,7 @@ func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRunt
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
-	_, _, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
+	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
@@ -90,7 +90,7 @@ func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRunt
 
 // processRequestObjectsState state to process the request for the current state.
 func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	_, _, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage)
+	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle request current state packet: %w", err)
 	}
