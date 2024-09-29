@@ -36,108 +36,129 @@ const (
 	DefaultFlowType FlowType = PushFlowType
 )
 
-// notifyProtocol state to notify the protocol.
-func startFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+// startFlowState state to start the flow.
+func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.StartFlowMessage, nil)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
 	}
 	statePacket, _, err := receiveAndHandleStatePacket(runtime, notpsmpackets.ActionResponseMessage)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to receive and handle action response packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to receive and handle action response packet: %w", err)
 	}
 	if !statePacket.HasAck() {
-		return runtime, nil, fmt.Errorf("notp: failed to receive ack in action response packet")
+		return nil, fmt.Errorf("notp: failed to receive ack in action response packet")
 	}
-	return runtime, subscriberNegotiationState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: subscriberNegotiationState,
+	}, nil
 }
 
-// processStartFlow state to process the start flow.
-func processStartFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+// processStartFlowState state to process the start flow.
+func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.StartFlowMessage)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
 	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.ActionResponseMessage, packetables)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
 	}
-	return runtime, FinalState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: FinalState,
+	}, nil
 }
 
-// notifyProtocol state to notify the protocol.
-func notifyProtocol(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+// notifyProtocolState state to notify the protocol.
+func notifyProtocolState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, nil)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
 	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
-	return runtime, subscriberNegotiationState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: subscriberNegotiationState,
+	}, nil
 }
 
 // requestObjectsState state to request the current state.
-func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, nil)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
 	}
 	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
-	return runtime, subscriberNegotiationState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: subscriberNegotiationState,
+	}, nil
 }
 
 // processRequestObjectsState state to process the request for the current state.
-func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to receive and handle request current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to receive and handle request current state packet: %w", err)
 	}
 	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage, packetables)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
 	}
-	return runtime, FinalState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: FinalState,
+	}, nil
 }
 
 // notifyObjectsState state to send the current state notification.
-func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NotifyCurrentObjectStatesMessage, nil)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
 	}
-	return runtime, publisherNegotiationState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: publisherNegotiationState,
+	}, nil
 }
 
 // processNotifyObjectsState state to process the current state notification.
-func processNotifyObjectsState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, nil, fmt.Errorf("notp: not implemented operation type")
+func processNotifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	return nil, fmt.Errorf("notp: not implemented operation type")
 }
 
 // submitNegotiationResponse state to submit negotiation response.
-func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
+func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NegotiationRequestMessage, nil)
 	if err != nil {
-		return runtime, nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
+		return nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
 	}
-	return runtime, FinalState, nil
+	return &StateTransitionInfo{
+		Runtime:   runtime,
+		NextState: FinalState,
+	}, nil
 }
 
 // submitNegotiationResponse state to submit negotiation response.
-func publisherNegotiationState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, nil, fmt.Errorf("notp: not implemented operation type")
+func publisherNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	return nil, fmt.Errorf("notp: not implemented operation type")
 }
 
 // publisherDataStreamState state to send data stream.
-func publisherDataStreamState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, nil, fmt.Errorf("notp: not implemented operation type")
+func publisherDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	return nil, fmt.Errorf("notp: not implemented operation type")
 }
 
 // subscriberDataStreamState state to receive data stream.
-func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, nil, fmt.Errorf("notp: not implemented operation type")
+func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	return nil, fmt.Errorf("notp: not implemented operation type")
 }

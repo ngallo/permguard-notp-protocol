@@ -40,8 +40,14 @@ type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 // HostHandler defines a function type for handling packet.
 type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error)
 
+// StateTransitionInfo holds the information about the state transition.
+type StateTransitionInfo struct {
+	Runtime  *StateMachineRuntimeContext
+	NextState StateTransitionFunc
+}
+
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
-type StateTransitionFunc func(runtimeIn *StateMachineRuntimeContext) (runtimeOut *StateMachineRuntimeContext, nextState StateTransitionFunc, err error)
+type StateTransitionFunc func(runtimeIn *StateMachineRuntimeContext) (nextStateInfo *StateTransitionInfo, err error)
 
 // InitialState defines the initial state of the state machine.
 func InitialState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFunc, error) {
@@ -49,25 +55,28 @@ func InitialState(runtime *StateMachineRuntimeContext) (bool, StateTransitionFun
 }
 
 // FinalState defines the final state of the state machine.
-func FinalState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, nil, nil
+func FinalState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	return &StateTransitionInfo{
+		Runtime:   runtime.WithFinal(),
+		NextState: nil,
+	}, nil
 }
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	inputValue		uint16
-	isFinal 		bool
-	flow		   	FlowType
-	transportLayer 	*notptransport.TransportLayer
-	initialState   	StateTransitionFunc
-	hostHandler    	HostHandler
+	inputValue     uint16
+	isFinal        bool
+	flow           FlowType
+	transportLayer *notptransport.TransportLayer
+	initialState   StateTransitionFunc
+	hostHandler    HostHandler
 }
 
 // WithInput returns the state machine runtime context with the input value.
 func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     inputValue,
-		isFinal:       t.isFinal,
+		isFinal:        t.isFinal,
 		flow:           t.flow,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
@@ -78,8 +87,8 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineR
 // WithFlow returns the state machine runtime context with the flow type.
 func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
-		inputValue:    	t.inputValue,
-		isFinal:       t.isFinal,
+		inputValue:     t.inputValue,
+		isFinal:        t.isFinal,
 		flow:           flowType,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
@@ -91,7 +100,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
-		isFinal:       true,
+		isFinal:        true,
 		flow:           t.flow,
 		transportLayer: t.transportLayer,
 		initialState:   t.initialState,
@@ -162,15 +171,15 @@ func (m *StateMachine) Run(inputValue FlowType) error {
 	runtime = runtime.WithFlow(FlowType(inputValue))
 	state := runtime.initialState
 	for state != nil {
-		runtimeOut, nextState, err := state(runtime)
-		runtime = runtimeOut
+		nextStateInfo, err := state(runtime)
+		runtime = nextStateInfo.Runtime
 		if err != nil {
 			return err
 		}
 		if runtime.IsFinal() {
 			break
 		}
-		state = nextState
+		state = nextStateInfo.NextState
 	}
 	return nil
 }
