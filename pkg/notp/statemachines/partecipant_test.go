@@ -97,11 +97,9 @@ func TestPullProtocolExecution(t *testing.T) {
 
 	expectedFollowerIDs := []uint16{
 		StartFlowStateID,
-		StartFlowStateID,
 	}
 
 	expectedLeaderIDs := []uint16{
-		ProcessStartFlowStateID,
 		ProcessStartFlowStateID,
 	}
 

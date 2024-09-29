@@ -101,7 +101,7 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.ActionResponseMessage, packetables)
+	err = createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.ActionResponseMessage, notpsmpackets.ActionAcknowledged, packetables)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
 	}

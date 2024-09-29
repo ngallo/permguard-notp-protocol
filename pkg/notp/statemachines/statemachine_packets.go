@@ -43,12 +43,16 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 	if err != nil {
 		return nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
-	_, messageValue, handledPacketables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
-	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+	var handledPacketables []notppackets.Packetable
+	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
+		_, messageValue, packetables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
+		handledPacketables = packetables
+		if err != nil {
+			return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+		}
+		statePacket.MessageValue = messageValue
+		statePacket.ErrorCode = errorCode
 	}
-	statePacket.MessageValue = messageValue
-	statePacket.ErrorCode = errorCode
 	return statePacket, handledPacketables, nil
 }
 
@@ -93,11 +97,15 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 	if statePacket.MessageCode != expectedState {
 		return nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}
-	_, messageValue, handledPacketables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
-	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+	var handledPacketables []notppackets.Packetable
+	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
+		_, messageValue, packetables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
+		handledPacketables = packetables
+		if err != nil {
+			return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+		}
+		statePacket.MessageValue = messageValue
+		statePacket.ErrorCode = errorCode
 	}
-	statePacket.MessageValue = messageValue
-	statePacket.ErrorCode = errorCode
 	return statePacket, handledPacketables, nil
 }
