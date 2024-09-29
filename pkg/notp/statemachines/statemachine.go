@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	FinalStateID = uint16(1)
+	FinalStateID   = uint16(1)
 	InitialStateID = uint16(2)
 )
 
@@ -47,8 +47,8 @@ type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets
 
 // StateTransitionInfo holds the information about the state transition.
 type StateTransitionInfo struct {
-	Runtime  *StateMachineRuntimeContext
-	StateID  uint16
+	Runtime *StateMachineRuntimeContext
+	StateID uint16
 }
 
 // StateTransitionFunc defines a function responsible for transitioning to the next state in the state machine.
@@ -76,7 +76,7 @@ type StateMachineRuntimeContext struct {
 	isFinal        bool
 	flow           FlowType
 	transportLayer *notptransport.TransportLayer
-	mapState 	   map[uint16]StateTransitionFunc
+	statemap       map[uint16]StateTransitionFunc
 	initialStateID uint16
 	hostHandler    HostHandler
 }
@@ -88,7 +88,7 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineR
 		isFinal:        t.isFinal,
 		flow:           t.flow,
 		transportLayer: t.transportLayer,
-		mapState: 	   	t.mapState,
+		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
 		hostHandler:    t.hostHandler,
 	}
@@ -101,7 +101,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 		isFinal:        t.isFinal,
 		flow:           flowType,
 		transportLayer: t.transportLayer,
-		mapState: 	   	t.mapState,
+		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
 		hostHandler:    t.hostHandler,
 	}
@@ -114,7 +114,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 		isFinal:        true,
 		flow:           t.flow,
 		transportLayer: t.transportLayer,
-		mapState: 	   	t.mapState,
+		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
 		hostHandler:    t.hostHandler,
 	}
@@ -181,7 +181,7 @@ type StateMachine struct {
 func (m *StateMachine) Run(inputValue FlowType) error {
 	runtime := m.runtime
 	runtime = runtime.WithFlow(FlowType(inputValue))
-	state := m.runtime.mapState[runtime.initialStateID]
+	state := m.runtime.statemap[runtime.initialStateID]
 	for state != nil {
 		nextStateInfo, err := state(runtime)
 		runtime = nextStateInfo.Runtime
@@ -191,17 +191,17 @@ func (m *StateMachine) Run(inputValue FlowType) error {
 		if runtime.IsFinal() {
 			break
 		}
-		state = m.runtime.mapState[nextStateInfo.StateID]
+		state = m.runtime.statemap[nextStateInfo.StateID]
 	}
 	return nil
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
-func NewStateMachine(mapState map[uint16] StateTransitionFunc, initialState uint16, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	if mapState == nil {
+func NewStateMachine(statemap map[uint16]StateTransitionFunc, initialStateID uint16, hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
+	if statemap == nil {
 		return nil, errors.New("notp: state map cannot be nil")
 	}
-	if mapState[initialState] == nil {
+	if statemap[initialStateID] == nil {
 		return nil, errors.New("notp: initial state does not exist in the state map")
 	}
 	if hostHandler == nil {
@@ -212,8 +212,12 @@ func NewStateMachine(mapState map[uint16] StateTransitionFunc, initialState uint
 	}
 	return &StateMachine{
 		runtime: &StateMachineRuntimeContext{
+			inputValue:     0,
+			isFinal:        false,
+			flow:           0,
 			transportLayer: transportLayer,
-			initialStateID: InitialStateID,
+			statemap:       statemap,
+			initialStateID: initialStateID,
 			hostHandler:    hostHandler,
 		},
 	}, nil

@@ -24,21 +24,7 @@ import (
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
 func NewFollowerStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	stateMap := map[uint16]StateTransitionFunc{
-		InitialStateID: InitialState,
-		FinalStateID: FinalState,
-		processStartFlowStateID: processStartFlowState,
-		notifyProtocolStateID: notifyProtocolState,
-		requestObjectsStateID: requestObjectsState,
-		processRequestObjectsStateID: processRequestObjectsState,
-		notifyObjectsStateID: notifyObjectsState,
-		processNotifyObjectsStateID: processNotifyObjectsState,
-		publisherNegotiationStateID: publisherNegotiationState,
-		publisherDataStreamStateID: publisherDataStreamState,
-		subscriberNegotiationStateID: subscriberNegotiationState,
-		subscriberDataStreamStateID: subscriberDataStreamState,
-	}
-	stateMachine, err := NewStateMachine(stateMap, startFlowStateID, hostHandler, transportLayer)
+	stateMachine, err := NewStateMachine(defaultStateMap, startFlowStateID, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
 	}

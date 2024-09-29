@@ -24,21 +24,7 @@ import (
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
 func NewLeaderStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	stateMap := map[uint16]StateTransitionFunc{
-		InitialStateID: InitialState,
-		FinalStateID: FinalState,
-		processStartFlowStateID: processStartFlowState,
-		notifyProtocolStateID: notifyProtocolState,
-		requestObjectsStateID: requestObjectsState,
-		processRequestObjectsStateID: processRequestObjectsState,
-		notifyObjectsStateID: notifyObjectsState,
-		processNotifyObjectsStateID: processNotifyObjectsState,
-		publisherNegotiationStateID: publisherNegotiationState,
-		publisherDataStreamStateID: publisherDataStreamState,
-		subscriberNegotiationStateID: subscriberNegotiationState,
-		subscriberDataStreamStateID: subscriberDataStreamState,
-	}
-	stateMachine, err := NewStateMachine(stateMap, processStartFlowStateID, hostHandler, transportLayer)
+	stateMachine, err := NewStateMachine(defaultStateMap, processStartFlowStateID, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
 	}
