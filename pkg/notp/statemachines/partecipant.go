@@ -40,8 +40,6 @@ const (
 	StartFlowStateID = uint16(10)
 	// ProcessStartFlowStateID represents the state ID for the process start flow state.
 	ProcessStartFlowStateID = uint16(11)
-	// NotifyProtocolStateID represents the state ID for the notify protocol state.
-	NotifyProtocolStateID = uint16(12)
 	// RequestObjectsStateID represents the state ID for the request objects state.
 	RequestObjectsStateID = uint16(13)
 	// ProcessRequestObjectsStateID represents the state ID for the process request objects state.
@@ -66,7 +64,6 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 	FinalStateID:                 FinalState,
 	StartFlowStateID:             startFlowState,
 	ProcessStartFlowStateID:      processStartFlowState,
-	NotifyProtocolStateID:        notifyProtocolState,
 	RequestObjectsStateID:        requestObjectsState,
 	ProcessRequestObjectsStateID: processRequestObjectsState,
 	NotifyObjectsStateID:         notifyObjectsState,
@@ -110,22 +107,6 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	return &StateTransitionInfo{
 		Runtime: runtime,
 		StateID: FinalStateID,
-	}, nil
-}
-
-// notifyProtocolState state to notify the protocol.
-func notifyProtocolState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RequestCurrentObjectsStateMessage, nil)
-	if err != nil {
-		return nil, fmt.Errorf("notp: failed to create and handle request current state packet: %w", err)
-	}
-	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
-	if err != nil {
-		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
-	}
-	return &StateTransitionInfo{
-		Runtime: runtime,
-		StateID: SubscriberNegotiationStateID,
 	}, nil
 }
 
