@@ -46,7 +46,7 @@ func decodeByteArry(data []byte) []byte {
     if err != nil {
         return data
     }
-    return buf.Bytes()
+	return buf.Bytes()
 }
 
 // writeStreamDataPacket writes a stream data packet to the buffer.
