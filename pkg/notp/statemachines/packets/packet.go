@@ -74,8 +74,7 @@ func (p *StatePacket) GetType() uint64 {
 
 // HasAck returns true if the packet has an acknowledgment.
 func (p *StatePacket) HasAck() bool {
-	v1, v2 := notppackets.SplitUint64toUint32(p.MessageValue)
-	return (v1 == AcknowledgedValue || v2 == AcknowledgedValue) && !p.HasError()
+	return notppackets.HasUint64AUint32(p.MessageValue, AcknowledgedValue) && !p.HasError()
 }
 
 // HasError returns true if the packet has errors.
