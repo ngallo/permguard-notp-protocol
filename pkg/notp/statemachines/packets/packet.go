@@ -63,14 +63,9 @@ type StatePacket struct {
 	ErrorCode    uint16
 }
 
-// GetMessageCode returns the message code.
-func (p *StatePacket) GetMessageCode() uint16 {
-	return p.MessageCode
-}
-
-// GetMessageValue returns the message value.
-func (p *StatePacket) GetMessageValue() uint64 {
-	return p.MessageValue
+// GetType returns the packet type.
+func (p *StatePacket) GetType() uint64 {
+	return notppackets.CombineUint32toUint64(StatePacketType, 0)
 }
 
 // HasAck returns true if the packet has an acknowledgment.
@@ -78,19 +73,9 @@ func (p *StatePacket) HasAck() bool {
 	return p.MessageValue == ActionAcknowledged && !p.HasError()
 }
 
-// GetType returns the packet type.
-func (p *StatePacket) GetType() uint64 {
-	return notppackets.CombineUint32toUint64(StatePacketType, 0)
-}
-
 // HasError returns true if the packet has errors.
 func (p *StatePacket) HasError() bool {
 	return p.ErrorCode != 0
-}
-
-// GetErrorCode returns the error code.
-func (p *StatePacket) GetErrorCode() uint16 {
-	return p.ErrorCode
 }
 
 // Serialize serializes the packet into bytes.
