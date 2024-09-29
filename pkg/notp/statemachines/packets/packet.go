@@ -71,6 +71,11 @@ func (p *StatePacket) GetMessageValue() uint64 {
 	return p.MessageValue
 }
 
+// HasAck returns true if the packet has an acknowledgment.
+func (p *StatePacket) HasAck() bool {
+	return p.MessageValue  == ActionAcknowledgedValue && !p.HasError()
+}
+
 // GetType returns the packet type.
 func (p *StatePacket) GetType() uint64 {
 	return notppackets.CombineUint32toUint64(StatePacketType, 0)
@@ -79,6 +84,11 @@ func (p *StatePacket) GetType() uint64 {
 // HasError returns true if the packet has errors.
 func (p *StatePacket) HasError() bool {
 	return p.ErrorCode != 0
+}
+
+// GetErrorCode returns the error code.
+func (p *StatePacket) GetErrorCode() uint16 {
+	return p.ErrorCode
 }
 
 // Serialize serializes the packet into bytes.

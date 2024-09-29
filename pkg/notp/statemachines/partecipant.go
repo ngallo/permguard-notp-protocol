@@ -42,9 +42,12 @@ func startFlow(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
 	}
-	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.ActionResponseMessage)
+	statePacket, _, err := receiveAndHandleStatePacket(runtime, notpsmpackets.ActionResponseMessage)
 	if err != nil {
 		return runtime, nil, fmt.Errorf("notp: failed to receive and handle action response packet: %w", err)
+	}
+	if !statePacket.HasAck() {
+		return runtime, nil, fmt.Errorf("notp: failed to receive ack in action response packet")
 	}
 	return runtime, subscriberNegotiationState, nil
 }

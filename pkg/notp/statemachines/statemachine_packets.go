@@ -86,7 +86,7 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 	if statePacket.MessageCode != expectedState {
 		return nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}
-	_, messageValue, handledPacketables, errorCode, err := runtime.Handle(handlerCtx, statePacket)
+	_, messageValue, handledPacketables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
 	if err != nil {
 		return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 	}
