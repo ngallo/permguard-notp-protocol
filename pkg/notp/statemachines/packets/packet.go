@@ -28,6 +28,11 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
+	// ActionRejected represents the value for a rejected action.
+	ActionRejected = uint64(0)
+	// ActionAcknowledged represents the value for an acknowledged action.
+	ActionAcknowledged = uint64(1)
+
 	// StartFlowMessage represents the notification of the flow.
 	StartFlowMessage = uint16(100)
 	// ActionResponseMessage represents the response to an action.
