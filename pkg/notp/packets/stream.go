@@ -18,6 +18,7 @@ package packets
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
 	"errors"
 	"unsafe"
@@ -27,6 +28,26 @@ const (
 	// PacketNullByte is the null byte used to separate data in the packet.
 	PacketNullByte = 0xFF
 )
+
+// encodeByteArry encodes a byte array to a base64 string.
+func encodeByteArry(data []byte) []byte {
+    var buf bytes.Buffer
+    encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+    encoder.Write(data)
+    encoder.Close()
+	return buf.Bytes()
+}
+
+// decodeByteArry decodes a base64 string to a byte array.
+func decodeByteArry(data []byte) []byte {
+    var buf bytes.Buffer
+    decoder := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(data))
+    _, err := buf.ReadFrom(decoder)
+    if err != nil {
+        return data
+    }
+    return buf.Bytes()
+}
 
 // writeStreamDataPacket writes a stream data packet to the buffer.
 func writeStreamDataPacket(data []byte, packetType uint64, packetStream *uint64, payload []byte) ([]byte, error) {
