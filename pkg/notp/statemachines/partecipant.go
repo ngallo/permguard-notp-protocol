@@ -24,7 +24,7 @@ import (
 )
 
 // FlowType represents the type of operation that the NOTP protocol is performing.
-type FlowType uint16
+type FlowType uint64
 
 const (
 	// UnknownFlowType represents an unknown state machine type.
@@ -87,15 +87,24 @@ func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, 
 	if !statePacket.HasAck() {
 		return nil, fmt.Errorf("notp: failed to receive ack in action response packet")
 	}
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PushFlowType:
+		stateID = NotifyObjectsStateID
+	case PullFlowType:
+		stateID = RequestObjectsStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: FinalStateID,
+		StateID: stateID,
 	}, nil
 }
 
 // processStartFlowState state to process the start flow.
 func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.StartFlowMessage)
+	statePacket, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.StartFlowMessage)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
@@ -104,9 +113,20 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
 	}
+	flowtype := FlowType(statePacket.MessageValue)
+	runtime = runtime.WithFlow(flowtype)
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PushFlowType:
+		stateID = ProcessNotifyObjectsStateID
+	case PullFlowType:
+		stateID = ProcessRequestObjectsStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: FinalStateID,
+		StateID: stateID,
 	}, nil
 }
 
@@ -120,9 +140,16 @@ func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionI
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
 	}
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PullFlowType:
+		stateID = SubscriberNegotiationStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: SubscriberNegotiationStateID,
+		StateID: stateID,
 	}, nil
 }
 
@@ -136,9 +163,16 @@ func processRequestObjectsState(runtime *StateMachineRuntimeContext) (*StateTran
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
 	}
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PullFlowType:
+		stateID = PublisherNegotiationStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: FinalStateID,
+		StateID: stateID,
 	}, nil
 }
 
@@ -148,40 +182,75 @@ func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionIn
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
 	}
+	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+	}
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PushFlowType:
+		stateID = PublisherNegotiationStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: PublisherNegotiationStateID,
+		StateID: stateID,
 	}, nil
 }
 
 // processNotifyObjectsState state to process the current state notification.
 func processNotifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	return nil, fmt.Errorf("notp: not implemented operation type")
+	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.NotifyCurrentObjectStatesMessage)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to receive and handle notify current state packet: %w", err)
+	}
+	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondCurrentStateMessage, packetables)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
+	}
+	var stateID uint16
+	switch runtime.GetFlowType() {
+	case PushFlowType:
+		stateID = SubscriberNegotiationStateID
+	default:
+		return nil, fmt.Errorf("notp: unknown flow type")
+	}
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: stateID,
+	}, nil
 }
 
 // submitNegotiationResponse state to submit negotiation response.
 func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NegotiationRequestMessage, nil)
-	if err != nil {
-		return nil, fmt.Errorf("notp: failed to create and handle submit negotiation request packet: %w", err)
-	}
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: SubscriberDataStreamStateID,
+	}, nil
+}
+
+// subscriberDataStreamState state to receive data stream.
+func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	return &StateTransitionInfo{
 		Runtime: runtime,
 		StateID: FinalStateID,
 	}, nil
 }
 
+
 // submitNegotiationResponse state to submit negotiation response.
 func publisherNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	return nil, fmt.Errorf("notp: not implemented operation type")
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: PublisherDataStreamStateID,
+	}, nil
 }
 
 // publisherDataStreamState state to send data stream.
 func publisherDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	return nil, fmt.Errorf("notp: not implemented operation type")
-}
-
-// subscriberDataStreamState state to receive data stream.
-func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	return nil, fmt.Errorf("notp: not implemented operation type")
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: FinalStateID,
+	}, nil
 }

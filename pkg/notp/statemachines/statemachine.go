@@ -88,7 +88,7 @@ func FinalState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, erro
 type StateMachineRuntimeContext struct {
 	inputValue     uint16
 	isFinal        bool
-	flow           FlowType
+	flowType       FlowType
 	transportLayer *notptransport.TransportLayer
 	statemap       map[uint16]StateTransitionFunc
 	initialStateID uint16
@@ -101,7 +101,7 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineR
 	return &StateMachineRuntimeContext{
 		inputValue:     inputValue,
 		isFinal:        t.isFinal,
-		flow:           t.flow,
+		flowType:           t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -115,7 +115,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
 		isFinal:        t.isFinal,
-		flow:           flowType,
+		flowType:           flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -129,7 +129,7 @@ func (t *StateMachineRuntimeContext) withCurrentState(currentStateID uint16) *St
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
 		isFinal:        true,
-		flow:           t.flow,
+		flowType:           t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -143,7 +143,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
 		isFinal:        true,
-		flow:           t.flow,
+		flowType:           t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -159,7 +159,7 @@ func (t *StateMachineRuntimeContext) IsFinal() bool {
 
 // GetFlowType returns the flow type of the state machine.
 func (t *StateMachineRuntimeContext) GetFlowType() FlowType {
-	return t.flow
+	return t.flowType
 }
 
 // GetCurrentStateID returns the current state ID of the state machine.
@@ -217,16 +217,16 @@ type StateMachine struct {
 // Run starts and runs the state machine through its states until termination.
 func (m *StateMachine) Run(inputValue FlowType) error {
 	runtime := m.runtime
-	runtime = runtime.WithFlow(FlowType(inputValue))
+	runtime = runtime.WithFlow(inputValue)
 	stateID := runtime.initialStateID
 	state := m.runtime.statemap[runtime.initialStateID]
 	for state != nil {
 		runtime = runtime.withCurrentState(stateID)
 		nextStateInfo, err := state(runtime)
-		runtime = nextStateInfo.Runtime
 		if err != nil {
 			return err
 		}
+		runtime = nextStateInfo.Runtime
 		if runtime.IsFinal() {
 			break
 		}
@@ -254,7 +254,7 @@ func NewStateMachine(statemap map[uint16]StateTransitionFunc, initialStateID uin
 		runtime: &StateMachineRuntimeContext{
 			inputValue:     0,
 			isFinal:        false,
-			flow:           0,
+			flowType:           0,
 			transportLayer: transportLayer,
 			statemap:       statemap,
 			initialStateID: initialStateID,
