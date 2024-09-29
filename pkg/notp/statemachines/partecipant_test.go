@@ -93,10 +93,10 @@ func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
 
 	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
-		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
+		return false, notpsmpackets.ActionAcknowledgedValue, packets, 0, nil
 	}
 	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
-		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
+		return false, notpsmpackets.ActionAcknowledgedValue, packets, 0, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
 
