@@ -24,14 +24,9 @@ import (
 
 // NewFollowerStateMachine creates and configures a new follower state machine for the given operation.
 func NewFollowerStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	stateMachine, err := NewStateMachine(FollowerAdvertiseState, hostHandler, transportLayer)
+	stateMachine, err := NewStateMachine(startFlow, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create follower state machine: %w", err)
 	}
 	return stateMachine, nil
-}
-
-// FollowerAdvertiseState handles the advertisement phase in the protocol.
-func FollowerAdvertiseState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, startFlow, nil
 }

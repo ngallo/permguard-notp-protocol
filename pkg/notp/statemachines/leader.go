@@ -24,14 +24,9 @@ import (
 
 // NewLeaderStateMachine creates and configures a new leader state machine for the given operation.
 func NewLeaderStateMachine(hostHandler HostHandler, transportLayer *notptransport.TransportLayer) (*StateMachine, error) {
-	stateMachine, err := NewStateMachine(LeaderAdvertiseState, hostHandler, transportLayer)
+	stateMachine, err := NewStateMachine(processStartFlow, hostHandler, transportLayer)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create leader state machine: %w", err)
 	}
 	return stateMachine, nil
-}
-
-// LeaderAdvertiseState handles the advertisement phase in the protocol.
-func LeaderAdvertiseState(runtime *StateMachineRuntimeContext) (*StateMachineRuntimeContext, StateTransitionFunc, error) {
-	return runtime, processStartFlow, nil
 }
