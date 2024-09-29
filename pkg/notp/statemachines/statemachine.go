@@ -48,8 +48,16 @@ func (h *HandlerContext) GetCurrentStateID() uint16 {
 // PacketCreatorFunc is a function that creates a packet.
 type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 
+// HostHandlerRuturn holds the return value of the host handler.
+type HostHandlerRuturn struct {
+	Retry 		 bool
+	MessageValue uint64
+	ErrorCode	 uint16
+	Packetables  []notppackets.Packetable
+}
+
 // HostHandler defines a function type for handling packet.
-type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error)
+type HostHandler func(*HandlerContext, *notpsmpackets.StatePacket, []notppackets.Packetable) (*HostHandlerRuturn, error)
 
 // StateTransitionInfo holds the information about the state transition.
 type StateTransitionInfo struct {
@@ -189,12 +197,12 @@ func (t *StateMachineRuntimeContext) ReceiveStream() ([]notppackets.Packetable, 
 }
 
 // Handle handles the packet for the state machine.
-func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket) (bool, uint64, []notppackets.Packetable, uint16, error) {
+func (t *StateMachineRuntimeContext) Handle(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket) (*HostHandlerRuturn, error) {
 	return t.HandleStream(handlerCtx, statePacket, nil)
 }
 
 // HandleStream handles a packet stream for the state machine.
-func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packetables []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+func (t *StateMachineRuntimeContext) HandleStream(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packetables []notppackets.Packetable) (*HostHandlerRuturn, error) {
 	if packetables == nil {
 		packetables = []notppackets.Packetable{}
 	}

@@ -103,18 +103,27 @@ func TestPullProtocolExecution(t *testing.T) {
 		ProcessStartFlowStateID,
 	}
 
-	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 		currentStateID := handlerCtx.GetCurrentStateID()
 		followerIDs = append(followerIDs, currentStateID)
-		if !statePacket.HasAck() {
-			return false, notpsmpackets.ActionRejected, packets, 0, nil
+		handlerReturn := &HostHandlerRuturn{
+			Packetables: packets,
 		}
-		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
+		if !statePacket.HasAck() {
+			handlerReturn.MessageValue = notpsmpackets.ActionRejected
+		} else {
+			handlerReturn.MessageValue = notpsmpackets.ActionAcknowledged
+		}
+		return handlerReturn, nil
 	}
-	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 		currentStateID := handlerCtx.GetCurrentStateID()
 		leaderIDs = append(leaderIDs, currentStateID)
-		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
+		handlerReturn := &HostHandlerRuturn{
+			Packetables: packets,
+			MessageValue: notpsmpackets.ActionAcknowledged,
+		}
+		return handlerReturn, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
 

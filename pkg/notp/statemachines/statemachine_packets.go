@@ -45,13 +45,13 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 	}
 	var handledPacketables []notppackets.Packetable
 	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
-		_, messageValue, packetables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
-		handledPacketables = packetables
+		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
+		handledPacketables = handlerReturn.Packetables
 		if err != nil {
 			return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 		}
-		statePacket.MessageValue = messageValue
-		statePacket.ErrorCode = errorCode
+		statePacket.MessageValue = handlerReturn.MessageValue
+		statePacket.ErrorCode = handlerReturn.ErrorCode
 	}
 	return statePacket, handledPacketables, nil
 }
@@ -99,13 +99,13 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 	}
 	var handledPacketables []notppackets.Packetable
 	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
-		_, messageValue, packetables, errorCode, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
-		handledPacketables = packetables
+		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
+		handledPacketables = handlerReturn.Packetables
 		if err != nil {
 			return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
 		}
-		statePacket.MessageValue = messageValue
-		statePacket.ErrorCode = errorCode
+		statePacket.MessageValue = handlerReturn.MessageValue
+		statePacket.ErrorCode = handlerReturn.ErrorCode
 	}
 	return statePacket, handledPacketables, nil
 }
