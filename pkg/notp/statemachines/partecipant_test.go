@@ -119,11 +119,10 @@ func TestPullProtocolExecution(t *testing.T) {
 	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 		currentStateID := handlerCtx.GetCurrentStateID()
 		leaderIDs = append(leaderIDs, currentStateID)
-		handlerReturn := &HostHandlerRuturn{
+		return &HostHandlerRuturn{
 			Packetables: packets,
 			MessageValue: notpsmpackets.ActionAcknowledged,
-		}
-		return handlerReturn, nil
+		}, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
 
