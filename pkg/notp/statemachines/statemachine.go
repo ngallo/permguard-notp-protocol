@@ -31,12 +31,18 @@ const (
 
 // HandlerContext holds the context of the handler.
 type HandlerContext struct {
-	flow FlowType
+	flow			FlowType
+	currentStateID 	uint16
 }
 
 // GetFlowType returns the flow type of the handler context.
 func (h *HandlerContext) GetFlowType() FlowType {
 	return h.flow
+}
+
+// GetCurrentStateID returns the current state ID of the handler context.
+func (h *HandlerContext) GetCurrentStateID() uint16 {
+	return h.currentStateID
 }
 
 // PacketCreatorFunc is a function that creates a packet.
@@ -78,6 +84,7 @@ type StateMachineRuntimeContext struct {
 	transportLayer *notptransport.TransportLayer
 	statemap       map[uint16]StateTransitionFunc
 	initialStateID uint16
+	currentStateID uint16
 	hostHandler    HostHandler
 }
 
@@ -90,6 +97,7 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineR
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
+		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
 	}
 }
@@ -103,6 +111,21 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
+		currentStateID: t.currentStateID,
+		hostHandler:    t.hostHandler,
+	}
+}
+
+// withCurrentState returns the state machine runtime context with the current state.
+func (t *StateMachineRuntimeContext) withCurrentState(currentStateID uint16) *StateMachineRuntimeContext {
+	return &StateMachineRuntimeContext{
+		inputValue:     t.inputValue,
+		isFinal:        true,
+		flow:           t.flow,
+		transportLayer: t.transportLayer,
+		statemap:       t.statemap,
+		initialStateID: t.initialStateID,
+		currentStateID: currentStateID,
 		hostHandler:    t.hostHandler,
 	}
 }
@@ -116,6 +139,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
+		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
 	}
 }
@@ -128,6 +152,11 @@ func (t *StateMachineRuntimeContext) IsFinal() bool {
 // GetFlowType returns the flow type of the state machine.
 func (t *StateMachineRuntimeContext) GetFlowType() FlowType {
 	return t.flow
+}
+
+// GetCurrentStateID returns the current state ID of the state machine.
+func (t *StateMachineRuntimeContext) GetCurrentStateID() uint16 {
+	return t.currentStateID
 }
 
 // Send sends a packet through the transport layer.
@@ -181,8 +210,10 @@ type StateMachine struct {
 func (m *StateMachine) Run(inputValue FlowType) error {
 	runtime := m.runtime
 	runtime = runtime.WithFlow(FlowType(inputValue))
+	stateID := runtime.initialStateID
 	state := m.runtime.statemap[runtime.initialStateID]
 	for state != nil {
+		runtime = runtime.withCurrentState(stateID)
 		nextStateInfo, err := state(runtime)
 		runtime = nextStateInfo.Runtime
 		if err != nil {
@@ -191,6 +222,7 @@ func (m *StateMachine) Run(inputValue FlowType) error {
 		if runtime.IsFinal() {
 			break
 		}
+		stateID = nextStateInfo.StateID
 		state = m.runtime.statemap[nextStateInfo.StateID]
 	}
 	return nil
@@ -218,6 +250,7 @@ func NewStateMachine(statemap map[uint16]StateTransitionFunc, initialStateID uin
 			transportLayer: transportLayer,
 			statemap:       statemap,
 			initialStateID: initialStateID,
+			currentStateID: initialStateID,
 			hostHandler:    hostHandler,
 		},
 	}, nil

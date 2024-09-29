@@ -92,13 +92,30 @@ func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHan
 func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
 
+	followerIDs:= []uint16{}
+	leaderIDs:= []uint16{}
+
+	expectedFollowerIDs := []uint16{
+		StartFlowStateID,
+		StartFlowStateID,
+	}
+
+	expectedLeaderIDs := []uint16{
+		ProcessStartFlowStateID,
+		ProcessStartFlowStateID,
+	}
+
 	followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+		currentStateID := handlerCtx.GetCurrentStateID()
+		followerIDs = append(followerIDs, currentStateID)
 		if !statePacket.HasAck() {
 			return false, notpsmpackets.ActionRejected, packets, 0, nil
 		}
 		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
 	}
 	leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (bool, uint64, []notppackets.Packetable, uint16, error) {
+		currentStateID := handlerCtx.GetCurrentStateID()
+		leaderIDs = append(leaderIDs, currentStateID)
 		return false, notpsmpackets.ActionAcknowledged, packets, 0, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
@@ -120,8 +137,16 @@ func TestPullProtocolExecution(t *testing.T) {
 
 	wg.Wait()
 
-	assert.Len(sMInfo.followerSent, 2, "Follower sent packets")
+	assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
 	assert.Len(sMInfo.followerReceived, 1, "Follower received packets")
 	assert.Len(sMInfo.leaderSent, 1, "Leader sent packets")
 	assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
+
+	for i, id := range followerIDs {
+		assert.Equal(expectedFollowerIDs[i], id, "Follower state ID")
+	}
+
+	for i, id := range leaderIDs {
+		assert.Equal(expectedLeaderIDs[i], id, "Leader state ID")
+	}
 }

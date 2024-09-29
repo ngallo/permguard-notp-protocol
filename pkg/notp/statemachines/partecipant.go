@@ -35,45 +35,45 @@ const (
 	// DefaultFlowType represents the default operation type.
 	DefaultFlowType FlowType = PushFlowType
 
-	// startFlowStateID represents the state ID for the start flow state.
-	startFlowStateID = uint16(10)
-	// processStartFlowStateID represents the state ID for the process start flow state.
-	processStartFlowStateID = uint16(11)
-	// notifyProtocolStateID represents the state ID for the notify protocol state.
-	notifyProtocolStateID = uint16(12)
-	// requestObjectsStateID represents the state ID for the request objects state.
-	requestObjectsStateID = uint16(13)
-	// processRequestObjectsStateID represents the state ID for the process request objects state.
-	processRequestObjectsStateID = uint16(14)
-	// notifyObjectsStateID represents the state ID for the notify objects state.
-	notifyObjectsStateID = uint16(15)
-	// processNotifyObjectsStateID represents the state ID for the process notify objects state.
-	processNotifyObjectsStateID = uint16(16)
-	// publisherNegotiationStateID represents the state ID for the publisher negotiation state.
-	publisherNegotiationStateID = uint16(17)
-	// publisherDataStreamStateID represents the state ID for the publisher data stream state.
-	publisherDataStreamStateID = uint16(18)
-	// subscriberNegotiationStateID represents the state ID for the subscriber negotiation state.
-	subscriberNegotiationStateID = uint16(19)
-	// subscriberDataStreamStateID represents the state ID for the subscriber data stream state.
-	subscriberDataStreamStateID = uint16(20)
+	// StartFlowStateID represents the state ID for the start flow state.
+	StartFlowStateID = uint16(10)
+	// ProcessStartFlowStateID represents the state ID for the process start flow state.
+	ProcessStartFlowStateID = uint16(11)
+	// NotifyProtocolStateID represents the state ID for the notify protocol state.
+	NotifyProtocolStateID = uint16(12)
+	// RequestObjectsStateID represents the state ID for the request objects state.
+	RequestObjectsStateID = uint16(13)
+	// ProcessRequestObjectsStateID represents the state ID for the process request objects state.
+	ProcessRequestObjectsStateID = uint16(14)
+	// NotifyObjectsStateID represents the state ID for the notify objects state.
+	NotifyObjectsStateID = uint16(15)
+	// ProcessNotifyObjectsStateID represents the state ID for the process notify objects state.
+	ProcessNotifyObjectsStateID = uint16(16)
+	// PublisherNegotiationStateID represents the state ID for the publisher negotiation state.
+	PublisherNegotiationStateID = uint16(17)
+	// PublisherDataStreamStateID represents the state ID for the publisher data stream state.
+	PublisherDataStreamStateID = uint16(18)
+	// SubscriberNegotiationStateID represents the state ID for the subscriber negotiation state.
+	SubscriberNegotiationStateID = uint16(19)
+	// SubscriberDataStreamStateID represents the state ID for the subscriber data stream state.
+	SubscriberDataStreamStateID = uint16(20)
 )
 
 // defaultStateMap represents the default state map for the state machine.
 var defaultStateMap = map[uint16]StateTransitionFunc{
 	InitialStateID:               InitialState,
 	FinalStateID:                 FinalState,
-	startFlowStateID: 		   	  startFlowState,
-	processStartFlowStateID:      processStartFlowState,
-	notifyProtocolStateID:        notifyProtocolState,
-	requestObjectsStateID:        requestObjectsState,
-	processRequestObjectsStateID: processRequestObjectsState,
-	notifyObjectsStateID:         notifyObjectsState,
-	processNotifyObjectsStateID:  processNotifyObjectsState,
-	publisherNegotiationStateID:  publisherNegotiationState,
-	publisherDataStreamStateID:   publisherDataStreamState,
-	subscriberNegotiationStateID: subscriberNegotiationState,
-	subscriberDataStreamStateID:  subscriberDataStreamState,
+	StartFlowStateID:             startFlowState,
+	ProcessStartFlowStateID:      processStartFlowState,
+	NotifyProtocolStateID:        notifyProtocolState,
+	RequestObjectsStateID:        requestObjectsState,
+	ProcessRequestObjectsStateID: processRequestObjectsState,
+	NotifyObjectsStateID:         notifyObjectsState,
+	ProcessNotifyObjectsStateID:  processNotifyObjectsState,
+	PublisherNegotiationStateID:  publisherNegotiationState,
+	PublisherDataStreamStateID:   publisherDataStreamState,
+	SubscriberNegotiationStateID: subscriberNegotiationState,
+	SubscriberDataStreamStateID:  subscriberDataStreamState,
 }
 
 // startFlowState state to start the flow.
@@ -91,7 +91,7 @@ func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, 
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: subscriberNegotiationStateID,
+		StateID: FinalStateID,
 	}, nil
 }
 
@@ -123,7 +123,7 @@ func notifyProtocolState(runtime *StateMachineRuntimeContext) (*StateTransitionI
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: subscriberNegotiationStateID,
+		StateID: SubscriberNegotiationStateID,
 	}, nil
 }
 
@@ -139,7 +139,7 @@ func requestObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionI
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: subscriberNegotiationStateID,
+		StateID: SubscriberNegotiationStateID,
 	}, nil
 }
 
@@ -167,7 +167,7 @@ func notifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTransitionIn
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: publisherNegotiationStateID,
+		StateID: PublisherNegotiationStateID,
 	}, nil
 }
 
