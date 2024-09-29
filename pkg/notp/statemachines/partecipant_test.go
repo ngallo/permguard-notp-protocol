@@ -92,8 +92,8 @@ func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHan
 func TestPullProtocolExecution(t *testing.T) {
 	assert := assert.New(t)
 
-	followerIDs:= []uint16{}
-	leaderIDs:= []uint16{}
+	followerIDs := []uint16{}
+	leaderIDs := []uint16{}
 
 	expectedFollowerIDs := []uint16{
 		StartFlowStateID,
@@ -110,9 +110,9 @@ func TestPullProtocolExecution(t *testing.T) {
 			Packetables: packets,
 		}
 		if !statePacket.HasAck() {
-			handlerReturn.MessageValue = notpsmpackets.ActionRejected
+			handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.RejectedValue, notpsmpackets.UnknownValue)
 		} else {
-			handlerReturn.MessageValue = notpsmpackets.ActionAcknowledged
+			handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
 		}
 		return handlerReturn, nil
 	}
@@ -120,8 +120,8 @@ func TestPullProtocolExecution(t *testing.T) {
 		currentStateID := handlerCtx.GetCurrentStateID()
 		leaderIDs = append(leaderIDs, currentStateID)
 		return &HostHandlerRuturn{
-			Packetables: packets,
-			MessageValue: notpsmpackets.ActionAcknowledged,
+			Packetables:  packets,
+			MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
 		}, nil
 	}
 	sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)

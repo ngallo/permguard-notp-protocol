@@ -19,6 +19,7 @@ package statemachines
 import (
 	"fmt"
 
+	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 	notpsmpackets "github.com/permguard/permguard-notp-protocol/pkg/notp/statemachines/packets"
 )
 
@@ -101,7 +102,8 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to receive and handle start flow packet: %w", err)
 	}
-	err = createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.ActionResponseMessage, notpsmpackets.ActionAcknowledged, packetables)
+	messageValue := notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
+	err = createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.ActionResponseMessage, messageValue, packetables)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle action response packet: %w", err)
 	}

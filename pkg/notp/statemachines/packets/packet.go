@@ -28,12 +28,16 @@ const (
 	// StatePacketType represents the type of the state packet.
 	StatePacketType = uint32(10)
 
-	// ActionUnknown indicates that the action is unknown.
-	ActionUnknown = uint64(0)
-	// ActionRejected indicates that the action was rejected.
-	ActionRejected = uint64(1)
-	// ActionAcknowledged indicates that the action was acknowledged.
-	ActionAcknowledged = uint64(2)
+	// UnknownValue indicates that the value is unknown.
+	UnknownValue = uint32(0)
+	// RejectedValue indicates that the action was rejected.
+	RejectedValue = uint32(1)
+	// AcknowledgedValue indicates that the action was acknowledged.
+	AcknowledgedValue = uint32(2)
+	// ActiveDataStreamValue indicates that the data stream is active.
+	ActiveDataStreamValue = uint32(3)
+	// CompletedDataStreamValue indicates that the data stream is completed.
+	CompletedDataStreamValue = uint32(4)
 
 	// StartFlowMessage represents the notification of the flow.
 	StartFlowMessage = uint16(100)
@@ -58,7 +62,7 @@ const (
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.
 type StatePacket struct {
-	MessageCode	 uint16
+	MessageCode  uint16
 	MessageValue uint64
 	ErrorCode    uint16
 }
@@ -70,7 +74,8 @@ func (p *StatePacket) GetType() uint64 {
 
 // HasAck returns true if the packet has an acknowledgment.
 func (p *StatePacket) HasAck() bool {
-	return p.MessageValue == ActionAcknowledged && !p.HasError()
+	v1, v2 := notppackets.SplitUint64toUint32(p.MessageValue)
+	return (v1 == AcknowledgedValue || v2 == AcknowledgedValue) && !p.HasError()
 }
 
 // HasError returns true if the packet has errors.
