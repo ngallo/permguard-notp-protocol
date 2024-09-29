@@ -102,12 +102,24 @@ func TestPullProtocolExecution(t *testing.T) {
 			name: "PullFlowType",
             flowType: PullFlowType,
             expectedFollowerIDs: []uint16{
-                StartFlowStateID,
-				StartFlowStateID,
+                RequestObjectsStateID,
+				RequestObjectsStateID,
             },
             expectedLeaderIDs: []uint16{
-                ProcessStartFlowStateID,
-				ProcessStartFlowStateID,
+                ProcessRequestObjectsStateID,
+				ProcessRequestObjectsStateID,
+            },
+        },
+        {
+			name: "PushFlowType",
+            flowType: PushFlowType,
+            expectedFollowerIDs: []uint16{
+                NotifyObjectsStateID,
+				NotifyObjectsStateID,
+            },
+            expectedLeaderIDs: []uint16{
+                ProcessNotifyObjectsStateID,
+				ProcessNotifyObjectsStateID,
             },
         },
     }
