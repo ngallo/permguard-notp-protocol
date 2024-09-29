@@ -86,7 +86,7 @@ func FinalState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, erro
 
 // StateMachineRuntimeContext holds the runtime context of the state machine.
 type StateMachineRuntimeContext struct {
-	inputValue     uint16
+	inputValue     uint64
 	isFinal        bool
 	flowType       FlowType
 	transportLayer *notptransport.TransportLayer
@@ -97,11 +97,11 @@ type StateMachineRuntimeContext struct {
 }
 
 // WithInput returns the state machine runtime context with the input value.
-func (t *StateMachineRuntimeContext) WithInput(inputValue uint16) *StateMachineRuntimeContext {
+func (t *StateMachineRuntimeContext) WithInput(inputValue uint64) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     inputValue,
 		isFinal:        t.isFinal,
-		flowType:           t.flowType,
+		flowType:       t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -115,7 +115,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
 		isFinal:        t.isFinal,
-		flowType:           flowType,
+		flowType:       flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -128,8 +128,8 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 func (t *StateMachineRuntimeContext) withCurrentState(currentStateID uint16) *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
-		isFinal:        true,
-		flowType:           t.flowType,
+		isFinal:        t.isFinal,
+		flowType:       t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,
@@ -143,7 +143,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 	return &StateMachineRuntimeContext{
 		inputValue:     t.inputValue,
 		isFinal:        true,
-		flowType:           t.flowType,
+		flowType:       t.flowType,
 		transportLayer: t.transportLayer,
 		statemap:       t.statemap,
 		initialStateID: t.initialStateID,

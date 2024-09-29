@@ -103,9 +103,11 @@ func TestPullProtocolExecution(t *testing.T) {
             flowType: PullFlowType,
             expectedFollowerIDs: []uint16{
                 StartFlowStateID,
+				StartFlowStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessStartFlowStateID,
+				ProcessStartFlowStateID,
             },
         },
     }
@@ -120,11 +122,7 @@ func TestPullProtocolExecution(t *testing.T) {
 				followerIDs = append(followerIDs, currentStateID)
 				handlerReturn := &HostHandlerRuturn{
 					Packetables: packets,
-				}
-				if !statePacket.HasAck() {
-					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.RejectedValue, notpsmpackets.UnknownValue)
-				} else {
-					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
+					MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
 				}
 				return handlerReturn, nil
 			}
@@ -157,10 +155,10 @@ func TestPullProtocolExecution(t *testing.T) {
 
 			wg.Wait()
 
-			assert.Len(sMInfo.followerSent, 1, "Follower sent packets")
-			assert.Len(sMInfo.followerReceived, 1, "Follower received packets")
-			assert.Len(sMInfo.leaderSent, 1, "Leader sent packets")
-			assert.Len(sMInfo.leaderReceived, 1, "Leader received packets")
+			assert.Len(sMInfo.followerSent, 2, "Follower sent packets")
+			assert.Len(sMInfo.followerReceived, 2, "Follower received packets")
+			assert.Len(sMInfo.leaderSent, 2, "Leader sent packets")
+			assert.Len(sMInfo.leaderReceived, 2, "Leader received packets")
 
 			for i, id := range followerIDs {
 				assert.Equal(test.expectedFollowerIDs[i], id, "Follower state ID")

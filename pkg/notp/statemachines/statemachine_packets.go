@@ -37,6 +37,11 @@ func createStatePacket(flow FlowType, currentStateID uint16, messageCode uint16,
 	return packet, handlerCtx, nil
 }
 
+// shouldHandlePacket checks if the packet should be handled.
+func  shouldHandlePacket(packet *notpsmpackets.StatePacket) bool {
+	return packet.MessageCode != notpsmpackets.ActionResponseMessage && packet.MessageCode != notpsmpackets.StartFlowMessage
+}
+
 // createAndHandleStatePacket creates a state packet and handles it.
 func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) (*notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	statePacket, handlerCtx, err := createStatePacket(runtime.GetFlowType(), runtime.currentStateID, messageCode, messageValue)
@@ -44,7 +49,7 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 		return nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
 	var handledPacketables []notppackets.Packetable
-	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
+	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
 		handledPacketables = handlerReturn.Packetables
 		if err != nil {
@@ -99,7 +104,7 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 		return nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}
 	var handledPacketables []notppackets.Packetable
-	if statePacket.MessageCode != notpsmpackets.ActionResponseMessage {
+	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
 		handledPacketables = handlerReturn.Packetables
 		if err != nil {

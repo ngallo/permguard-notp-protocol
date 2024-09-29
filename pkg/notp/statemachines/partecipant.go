@@ -76,7 +76,7 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 
 // startFlowState state to start the flow.
 func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.StartFlowMessage, nil)
+	err := createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.StartFlowMessage, uint64(runtime.flowType), nil)
 	if err != nil {
 		return nil, fmt.Errorf("notp: failed to create and handle start flow packet: %w", err)
 	}
