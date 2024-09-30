@@ -19,7 +19,7 @@
 This repository implements the NOTP Protocol (Negotiated Object Transfer Protocol).
 
 <p align="center">
-  <img src="https://github.com/permguard/permguard/blob/main/assets/permguard.png?raw=true" class="center"/>
+  <img src="https://github.com/permguard/permguard-notp-protocol/blob/main/assets/notp.png?raw=true" class="center"/>
 </p>
 
 Created by [Nitro Agility](https://www.nitroagility.com/).
