@@ -130,28 +130,34 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherDataStreamStateID,
             },
         },
-        // {
-		// 	name: "PushFlowType",
-        //     flowType: PushFlowType,
-		// 	followerSent: 4,
-		// 	followerReceived: 3,
-		// 	leaderSent: 3,
-		// 	leaderReceived: 4,
-        //     expectedFollowerIDs: []uint16{
-        //         NotifyObjectsStateID,
-		// 		NotifyObjectsStateID,
-		// 		PublisherNegotiationStateID,
-		// 		PublisherNegotiationStateID,
-		// 		PublisherDataStreamStateID,
-        //     },
-        //     expectedLeaderIDs: []uint16{
-        //         ProcessNotifyObjectsStateID,
-		// 		ProcessNotifyObjectsStateID,
-		// 		SubscriberNegotiationStateID,
-		// 		SubscriberNegotiationStateID,
-		// 		SubscriberDataStreamStateID,
-        //     },
-        // },
+        {
+			name: "PushFlowType",
+            flowType: PushFlowType,
+			followerSent: 7,
+			followerReceived: 3,
+			leaderSent: 3,
+			leaderReceived: 7,
+            expectedFollowerIDs: []uint16{
+                NotifyObjectsStateID,
+				NotifyObjectsStateID,
+				PublisherNegotiationStateID,
+				PublisherNegotiationStateID,
+				PublisherDataStreamStateID,
+				PublisherDataStreamStateID,
+				PublisherDataStreamStateID,
+				PublisherDataStreamStateID,
+            },
+            expectedLeaderIDs: []uint16{
+                ProcessNotifyObjectsStateID,
+				ProcessNotifyObjectsStateID,
+				SubscriberNegotiationStateID,
+				SubscriberNegotiationStateID,
+				SubscriberDataStreamStateID,
+				SubscriberDataStreamStateID,
+				SubscriberDataStreamStateID,
+				SubscriberDataStreamStateID,
+            },
+        },
     }
 
     for _, test := range tests {
@@ -166,7 +172,16 @@ func TestPullProtocolExecution(t *testing.T) {
 				handlerReturn := &HostHandlerRuturn {
 					Packetables: packets,
 				}
-				if handlerCtx.GetCurrentStateID() == SubscriberDataStreamStateID {
+				if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID && handlerCtx.GetFlowType() == PushFlowType {
+					if streamSize > 0 {
+						handlerReturn.MessageValue  = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
+						handlerReturn.HasMore = true
+					} else {
+						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.CompletedDataStreamValue)
+						handlerReturn.HasMore = false
+					}
+					streamSize--
+				} else if handlerCtx.GetCurrentStateID() == SubscriberDataStreamStateID && handlerCtx.GetFlowType() == PullFlowType {
 					handlerReturn.MessageValue = statePacket.MessageValue
 				} else {
 					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
@@ -180,7 +195,9 @@ func TestPullProtocolExecution(t *testing.T) {
 				handlerReturn := &HostHandlerRuturn {
 					Packetables: packets,
 				}
-				if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID {
+				if handlerCtx.GetCurrentStateID() == SubscriberDataStreamStateID && handlerCtx.GetFlowType() == PushFlowType {
+					handlerReturn.MessageValue = statePacket.MessageValue
+				} else if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID && handlerCtx.GetFlowType() == PullFlowType {
 					if streamSize > 0 {
 						handlerReturn.MessageValue  = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
 						handlerReturn.HasMore = true
