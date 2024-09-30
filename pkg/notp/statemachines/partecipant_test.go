@@ -95,39 +95,55 @@ func TestPullProtocolExecution(t *testing.T) {
     tests := []struct {
 		name				string
         flowType           	FlowType
+		followerSent		int
+		followerReceived	int
+		leaderSent 			int
+		leaderReceived 		int
         expectedFollowerIDs []uint16
         expectedLeaderIDs   []uint16
     }{
         {
 			name: "PullFlowType",
             flowType: PullFlowType,
+			followerSent: 3,
+			followerReceived: 4,
+			leaderSent: 4,
+			leaderReceived: 3,
             expectedFollowerIDs: []uint16{
                 RequestObjectsStateID,
 				RequestObjectsStateID,
 				SubscriberNegotiationStateID,
 				SubscriberNegotiationStateID,
+				SubscriberDataStreamStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessRequestObjectsStateID,
 				ProcessRequestObjectsStateID,
 				PublisherNegotiationStateID,
 				PublisherNegotiationStateID,
+				PublisherDataStreamStateID,
             },
         },
         {
 			name: "PushFlowType",
             flowType: PushFlowType,
+			followerSent: 4,
+			followerReceived: 3,
+			leaderSent: 3,
+			leaderReceived: 4,
             expectedFollowerIDs: []uint16{
                 NotifyObjectsStateID,
 				NotifyObjectsStateID,
 				PublisherNegotiationStateID,
 				PublisherNegotiationStateID,
+				PublisherDataStreamStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessNotifyObjectsStateID,
 				ProcessNotifyObjectsStateID,
 				SubscriberNegotiationStateID,
 				SubscriberNegotiationStateID,
+				SubscriberDataStreamStateID,
             },
         },
     }
@@ -175,10 +191,10 @@ func TestPullProtocolExecution(t *testing.T) {
 
 			wg.Wait()
 
-			assert.Len(sMInfo.followerSent, 3, "Follower sent packets")
-			assert.Len(sMInfo.followerReceived, 3, "Follower received packets")
-			assert.Len(sMInfo.leaderSent, 3, "Leader sent packets")
-			assert.Len(sMInfo.leaderReceived, 3, "Leader received packets")
+			assert.Len(sMInfo.followerSent, test.followerSent, "Follower sent packets")
+			assert.Len(sMInfo.followerReceived, test.followerReceived, "Follower received packets")
+			assert.Len(sMInfo.leaderSent, test.leaderSent, "Leader sent packets")
+			assert.Len(sMInfo.leaderReceived, test.leaderReceived, "Leader received packets")
 
 			for i, id := range followerIDs {
 				assert.Equal(test.expectedFollowerIDs[i], id, "Follower state ID")

@@ -77,6 +77,16 @@ func (p *StatePacket) HasAck() bool {
 	return notppackets.HasUint64AUint32(p.MessageValue, AcknowledgedValue) && !p.HasError()
 }
 
+// HasActiveDataStream returns true if the packet has an active data stream.
+func (p *StatePacket) HasActiveDataStream() bool {
+	return notppackets.HasUint64AUint32(p.MessageValue, ActiveDataStreamValue) && !p.HasError()
+}
+
+// HasCompletedDataStream returns true if the packet has a completed data stream.
+func (p *StatePacket) HasCompletedDataStream() bool {
+	return notppackets.HasUint64AUint32(p.MessageValue, CompletedDataStreamValue) && !p.HasError()
+}
+
 // HasError returns true if the packet has errors.
 func (p *StatePacket) HasError() bool {
 	return p.ErrorCode != 0

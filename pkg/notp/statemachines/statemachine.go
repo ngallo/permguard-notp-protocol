@@ -31,8 +31,8 @@ const (
 
 // HandlerContext holds the context of the handler.
 type HandlerContext struct {
-	flow			FlowType
-	currentStateID 	uint16
+	flow           FlowType
+	currentStateID uint16
 }
 
 // GetFlowType returns the flow type of the handler context.
@@ -50,9 +50,9 @@ type PacketCreatorFunc func(*notpsmpackets.StatePacket) notppackets.Packetable
 
 // HostHandlerRuturn holds the return value of the host handler.
 type HostHandlerRuturn struct {
-	Retry 		 bool
+	HasMore      bool
 	MessageValue uint64
-	ErrorCode	 uint16
+	ErrorCode    uint16
 	Packetables  []notppackets.Packetable
 }
 
@@ -254,7 +254,7 @@ func NewStateMachine(statemap map[uint16]StateTransitionFunc, initialStateID uin
 		runtime: &StateMachineRuntimeContext{
 			inputValue:     0,
 			isFinal:        false,
-			flowType:           0,
+			flowType:       0,
 			transportLayer: transportLayer,
 			statemap:       statemap,
 			initialStateID: initialStateID,

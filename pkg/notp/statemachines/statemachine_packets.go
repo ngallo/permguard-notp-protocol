@@ -38,44 +38,52 @@ func createStatePacket(flow FlowType, currentStateID uint16, messageCode uint16,
 }
 
 // shouldHandlePacket checks if the packet should be handled.
-func  shouldHandlePacket(packet *notpsmpackets.StatePacket) bool {
+func shouldHandlePacket(packet *notpsmpackets.StatePacket) bool {
 	return packet.MessageCode != notpsmpackets.ActionResponseMessage && packet.MessageCode != notpsmpackets.StartFlowMessage
 }
 
 // createAndHandleStatePacket creates a state packet and handles it.
-func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) (*notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) (*notpsmpackets.StatePacket, []notppackets.Packetable, bool, error) {
 	statePacket, handlerCtx, err := createStatePacket(runtime.GetFlowType(), runtime.currentStateID, messageCode, messageValue)
 	if err != nil {
-		return nil, nil, fmt.Errorf("notp: failed to create state packet: %w", err)
+		return nil, nil, false, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
 	var handledPacketables []notppackets.Packetable
+	hasMore := false
 	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
+		hasMore = handlerReturn.HasMore
 		handledPacketables = handlerReturn.Packetables
 		if err != nil {
-			return nil, nil, fmt.Errorf("notp: failed to handle created packet: %w", err)
+			return nil, nil, false, fmt.Errorf("notp: failed to handle created packet: %w", err)
 		}
 		statePacket.MessageValue = handlerReturn.MessageValue
 		statePacket.ErrorCode = handlerReturn.ErrorCode
 	}
-	return statePacket, handledPacketables, nil
+	return statePacket, handledPacketables, hasMore, nil
 }
 
 // createAndHandleAndStreamStatePacket creates a state packet, handles it, and streams it.
-func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, packetables []notppackets.Packetable) error {
+func createAndHandleAndStreamStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, packetables []notppackets.Packetable) (notppackets.Packetable, error) {
 	messageValue := notppackets.CombineUint32toUint64(notpsmpackets.UnknownValue, notpsmpackets.UnknownValue)
 	return createAndHandleAndStreamStatePacketWithValue(runtime, messageCode, messageValue, packetables)
 }
 
 // createAndHandleAndStreamStatePacketWithValue creates a state packet with value, handles it, and streams it.
-func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) error {
-	packet, packetables, err := createAndHandleStatePacket(runtime, messageCode, messageValue, packetables)
-	if err != nil {
-		return fmt.Errorf("notp: failed to create and handle packet: %w", err)
+func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) (notppackets.Packetable, error) {
+	var packet *notpsmpackets.StatePacket
+	hasMore := true
+	for hasMore {
+		statePacket, packetables, handlerHasMore, err := createAndHandleStatePacket(runtime, messageCode, messageValue, packetables)
+		hasMore = handlerHasMore
+		packet = statePacket
+		if err != nil {
+			return nil, fmt.Errorf("notp: failed to create and handle packet: %w", err)
+		}
+		streamPacketables := append([]notppackets.Packetable{statePacket}, packetables...)
+		runtime.SendStream(streamPacketables)
 	}
-	streamPacketables := append([]notppackets.Packetable{packet}, packetables...)
-	runtime.SendStream(streamPacketables)
-	return nil
+	return packet, nil
 }
 
 // receiveAndHandleStatePacket receives a state packet and handles it.
