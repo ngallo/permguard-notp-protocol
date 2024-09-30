@@ -90,8 +90,10 @@ func (t *WireStream) ReceivePacket() (*notppackets.Packet, error) {
 }
 
 // NewWireStream creates and initializes a new in-wire stream with a fixed timeout.
-func NewWireStream(timeout time.Duration) (*WireStream, error) {
+func NewWireStream(sender WireSendFunc, receiver WireRecvFunc, timeout time.Duration) (*WireStream, error) {
 	return &WireStream{
+		sender:   sender,
+		receiver: receiver,
 		timeout:  timeout,
 	}, nil
 }
