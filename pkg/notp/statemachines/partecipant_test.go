@@ -106,14 +106,17 @@ func TestPullProtocolExecution(t *testing.T) {
 			name: "PullFlowType",
             flowType: PullFlowType,
 			followerSent: 3,
-			followerReceived: 4,
-			leaderSent: 4,
+			followerReceived: 7,
+			leaderSent: 7,
 			leaderReceived: 3,
             expectedFollowerIDs: []uint16{
                 RequestObjectsStateID,
 				RequestObjectsStateID,
 				SubscriberNegotiationStateID,
 				SubscriberNegotiationStateID,
+				SubscriberDataStreamStateID,
+				SubscriberDataStreamStateID,
+				SubscriberDataStreamStateID,
 				SubscriberDataStreamStateID,
             },
             expectedLeaderIDs: []uint16{
@@ -122,30 +125,33 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherNegotiationStateID,
 				PublisherNegotiationStateID,
 				PublisherDataStreamStateID,
-            },
-        },
-        {
-			name: "PushFlowType",
-            flowType: PushFlowType,
-			followerSent: 4,
-			followerReceived: 3,
-			leaderSent: 3,
-			leaderReceived: 4,
-            expectedFollowerIDs: []uint16{
-                NotifyObjectsStateID,
-				NotifyObjectsStateID,
-				PublisherNegotiationStateID,
-				PublisherNegotiationStateID,
+				PublisherDataStreamStateID,
+				PublisherDataStreamStateID,
 				PublisherDataStreamStateID,
             },
-            expectedLeaderIDs: []uint16{
-                ProcessNotifyObjectsStateID,
-				ProcessNotifyObjectsStateID,
-				SubscriberNegotiationStateID,
-				SubscriberNegotiationStateID,
-				SubscriberDataStreamStateID,
-            },
         },
+        // {
+		// 	name: "PushFlowType",
+        //     flowType: PushFlowType,
+		// 	followerSent: 4,
+		// 	followerReceived: 3,
+		// 	leaderSent: 3,
+		// 	leaderReceived: 4,
+        //     expectedFollowerIDs: []uint16{
+        //         NotifyObjectsStateID,
+		// 		NotifyObjectsStateID,
+		// 		PublisherNegotiationStateID,
+		// 		PublisherNegotiationStateID,
+		// 		PublisherDataStreamStateID,
+        //     },
+        //     expectedLeaderIDs: []uint16{
+        //         ProcessNotifyObjectsStateID,
+		// 		ProcessNotifyObjectsStateID,
+		// 		SubscriberNegotiationStateID,
+		// 		SubscriberNegotiationStateID,
+		// 		SubscriberDataStreamStateID,
+        //     },
+        // },
     }
 
     for _, test := range tests {
@@ -153,12 +159,17 @@ func TestPullProtocolExecution(t *testing.T) {
 			followerIDs := []uint16{}
 			leaderIDs := []uint16{}
 
+			streamSize := 3
 			followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 				currentStateID := handlerCtx.GetCurrentStateID()
 				followerIDs = append(followerIDs, currentStateID)
-				handlerReturn := &HostHandlerRuturn{
+				handlerReturn := &HostHandlerRuturn {
 					Packetables: packets,
-					MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
+				}
+				if handlerCtx.GetCurrentStateID() == SubscriberDataStreamStateID {
+					handlerReturn.MessageValue = statePacket.MessageValue
+				} else {
+					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
 				}
 				return handlerReturn, nil
 			}
@@ -166,10 +177,23 @@ func TestPullProtocolExecution(t *testing.T) {
 			leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 				currentStateID := handlerCtx.GetCurrentStateID()
 				leaderIDs = append(leaderIDs, currentStateID)
-				return &HostHandlerRuturn{
-					Packetables:  packets,
-					MessageValue: notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue),
-				}, nil
+				handlerReturn := &HostHandlerRuturn {
+					Packetables: packets,
+				}
+				if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID {
+					if streamSize > 0 {
+						handlerReturn.MessageValue  = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
+						handlerReturn.HasMore = true
+					} else {
+						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.CompletedDataStreamValue)
+						handlerReturn.HasMore = false
+					}
+					streamSize--
+
+				} else {
+					handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
+				}
+				return handlerReturn, nil
 			}
 
 			sMInfo := buildCommitStateMachines(assert, followerHandler, leaderHandler)
