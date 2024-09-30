@@ -20,7 +20,7 @@ package transport
 import (
 	"errors"
 	"time"
-	
+
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
@@ -28,7 +28,7 @@ import (
 type InMemoryStream struct {
 	packets   []notppackets.Packet
 	packetCh  chan notppackets.Packet
-	timeout   time.Duration // Fisso timeout per tutte le operazioni di ricezione
+	timeout   time.Duration
 }
 
 // TransmitPacket appends a packet to the in-memory stream.
@@ -37,7 +37,7 @@ func (t *InMemoryStream) TransmitPacket(packet *notppackets.Packet) error {
 		return errors.New("notp: cannot transmit a nil packet")
 	}
 	t.packets = append(t.packets, *packet)
-	t.packetCh <- *packet // Notify that a packet is available
+	t.packetCh <- *packet
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (t *InMemoryStream) ReceivePacket() (*notppackets.Packet, error) {
 func NewInMemoryStream(timeout time.Duration) (*InMemoryStream, error) {
 	return &InMemoryStream{
 		packets:  make([]notppackets.Packet, 0),
-		packetCh: make(chan notppackets.Packet, 10), // Buffered channel to handle packet transmission
-		timeout:  timeout, // Imposta il timeout fisso
+		packetCh: make(chan notppackets.Packet, 10),
+		timeout:  timeout,
 	}, nil
 }
