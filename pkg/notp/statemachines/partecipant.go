@@ -224,9 +224,21 @@ func processNotifyObjectsState(runtime *StateMachineRuntimeContext) (*StateTrans
 
 // submitNegotiationResponse state to submit negotiation response.
 func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.NegotiationRequestMessage, nil)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to create and handle notify current state packet: %w", err)
+	}
+	statePacket, _, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RespondNegotiationRequestMessage)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to receive and handle respond current state packet: %w", err)
+	}
+	if !statePacket.HasAck() {
+		return nil, fmt.Errorf("notp: failed to receive ack in action response packet")
+	}
+	stateID := SubscriberDataStreamStateID
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: SubscriberDataStreamStateID,
+		StateID: stateID,
 	}, nil
 }
 
@@ -241,9 +253,18 @@ func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateTrans
 
 // submitNegotiationResponse state to submit negotiation response.
 func publisherNegotiationState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	_, packetables, err := receiveAndHandleStatePacket(runtime, notpsmpackets.NegotiationRequestMessage)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to receive and handle notify current state packet: %w", err)
+	}
+	err = createAndHandleAndStreamStatePacket(runtime, notpsmpackets.RespondNegotiationRequestMessage, packetables)
+	if err != nil {
+		return nil, fmt.Errorf("notp: failed to create and handle respond current state packet: %w", err)
+	}
+	stateID := PublisherDataStreamStateID
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: PublisherDataStreamStateID,
+		StateID: stateID,
 	}, nil
 }
 

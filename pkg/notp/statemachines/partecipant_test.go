@@ -104,10 +104,14 @@ func TestPullProtocolExecution(t *testing.T) {
             expectedFollowerIDs: []uint16{
                 RequestObjectsStateID,
 				RequestObjectsStateID,
+				SubscriberNegotiationStateID,
+				SubscriberNegotiationStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessRequestObjectsStateID,
 				ProcessRequestObjectsStateID,
+				PublisherNegotiationStateID,
+				PublisherNegotiationStateID,
             },
         },
         {
@@ -116,10 +120,14 @@ func TestPullProtocolExecution(t *testing.T) {
             expectedFollowerIDs: []uint16{
                 NotifyObjectsStateID,
 				NotifyObjectsStateID,
+				PublisherNegotiationStateID,
+				PublisherNegotiationStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessNotifyObjectsStateID,
 				ProcessNotifyObjectsStateID,
+				SubscriberNegotiationStateID,
+				SubscriberNegotiationStateID,
             },
         },
     }
@@ -167,10 +175,10 @@ func TestPullProtocolExecution(t *testing.T) {
 
 			wg.Wait()
 
-			assert.Len(sMInfo.followerSent, 2, "Follower sent packets")
-			assert.Len(sMInfo.followerReceived, 2, "Follower received packets")
-			assert.Len(sMInfo.leaderSent, 2, "Leader sent packets")
-			assert.Len(sMInfo.leaderReceived, 2, "Leader received packets")
+			assert.Len(sMInfo.followerSent, 3, "Follower sent packets")
+			assert.Len(sMInfo.followerReceived, 3, "Follower received packets")
+			assert.Len(sMInfo.leaderSent, 3, "Leader sent packets")
+			assert.Len(sMInfo.leaderReceived, 3, "Leader received packets")
 
 			for i, id := range followerIDs {
 				assert.Equal(test.expectedFollowerIDs[i], id, "Follower state ID")
