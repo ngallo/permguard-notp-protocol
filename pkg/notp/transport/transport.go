@@ -46,7 +46,10 @@ func (t *TransportLayer) TransmitPacket(packetables []notppackets.Packetable) er
 	}
 	writer.WriteProtocol(&notppackets.ProtocolPacket{ Version: 1 })
 	for _, packetable := range packetables {
-		writer.AppendDataPacket(packetable)
+		err := writer.AppendDataPacket(packetable)
+		if err != nil {
+			return err
+		}
 	}
 	compressedData, err := azfiles.CompressData(packet.Data)
 	if err != nil {

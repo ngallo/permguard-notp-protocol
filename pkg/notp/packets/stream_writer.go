@@ -25,7 +25,6 @@ import (
 type PacketWriter struct {
 	packet           *Packet
 	protocolEndIndex int
-	streamType       uint64
 	streamEndIndex   int
 }
 
@@ -40,7 +39,6 @@ func NewPacketWriter(packet *Packet) (*PacketWriter, error) {
 	return &PacketWriter{
 		packet:           packet,
 		protocolEndIndex: -1,
-		streamType:       0,
 		streamEndIndex:   -1,
 	}, nil
 }
@@ -83,11 +81,7 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 		if w.packet.Data, err = writeStreamDataPacket(w.packet.Data, dataType, &streamSize, data); err != nil {
 			return err
 		}
-		w.streamType = dataType
 	} else {
-		if dataType != w.streamType {
-			return errors.New("notp: invalid data packet type")
-		}
 		if w.packet.Data, err = writeDataPacket(w.packet.Data, dataType, data); err != nil {
 			return err
 		}

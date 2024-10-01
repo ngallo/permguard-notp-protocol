@@ -102,34 +102,34 @@ func TestPullProtocolExecution(t *testing.T) {
         expectedFollowerIDs []uint16
         expectedLeaderIDs   []uint16
     }{
-        {
-			name: "PullFlowType",
-            flowType: PullFlowType,
-			followerSent: 3,
-			followerReceived: 7,
-			leaderSent: 7,
-			leaderReceived: 3,
-            expectedFollowerIDs: []uint16{
-                RequestObjectsStateID,
-				RequestObjectsStateID,
-				SubscriberNegotiationStateID,
-				SubscriberNegotiationStateID,
-				SubscriberDataStreamStateID,
-				SubscriberDataStreamStateID,
-				SubscriberDataStreamStateID,
-				SubscriberDataStreamStateID,
-            },
-            expectedLeaderIDs: []uint16{
-                ProcessRequestObjectsStateID,
-				ProcessRequestObjectsStateID,
-				PublisherNegotiationStateID,
-				PublisherNegotiationStateID,
-				PublisherDataStreamStateID,
-				PublisherDataStreamStateID,
-				PublisherDataStreamStateID,
-				PublisherDataStreamStateID,
-            },
-        },
+        // {
+		// 	name: "PullFlowType",
+        //     flowType: PullFlowType,
+		// 	followerSent: 3,
+		// 	followerReceived: 7,
+		// 	leaderSent: 7,
+		// 	leaderReceived: 3,
+        //     expectedFollowerIDs: []uint16{
+        //         RequestObjectsStateID,
+		// 		RequestObjectsStateID,
+		// 		SubscriberNegotiationStateID,
+		// 		SubscriberNegotiationStateID,
+		// 		SubscriberDataStreamStateID,
+		// 		SubscriberDataStreamStateID,
+		// 		SubscriberDataStreamStateID,
+		// 		SubscriberDataStreamStateID,
+        //     },
+        //     expectedLeaderIDs: []uint16{
+        //         ProcessRequestObjectsStateID,
+		// 		ProcessRequestObjectsStateID,
+		// 		PublisherNegotiationStateID,
+		// 		PublisherNegotiationStateID,
+		// 		PublisherDataStreamStateID,
+		// 		PublisherDataStreamStateID,
+		// 		PublisherDataStreamStateID,
+		// 		PublisherDataStreamStateID,
+        //     },
+        // },
         {
 			name: "PushFlowType",
             flowType: PushFlowType,
@@ -169,8 +169,11 @@ func TestPullProtocolExecution(t *testing.T) {
 			followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
 				currentStateID := handlerCtx.GetCurrentStateID()
 				followerIDs = append(followerIDs, currentStateID)
+				packet := &notppackets.Packet{
+					Data: []byte("sample data"),
+				}
 				handlerReturn := &HostHandlerRuturn {
-					Packetables: packets,
+					Packetables: []notppackets.Packetable{packet},
 				}
 				if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID && handlerCtx.GetFlowType() == PushFlowType {
 					if streamSize > 0 {

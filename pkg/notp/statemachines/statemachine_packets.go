@@ -81,7 +81,10 @@ func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeCo
 			return nil, fmt.Errorf("notp: failed to create and handle packet: %w", err)
 		}
 		streamPacketables := append([]notppackets.Packetable{statePacket}, packetables...)
-		runtime.SendStream(streamPacketables)
+		err = runtime.SendStream(streamPacketables)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return packet, nil
 }
