@@ -6,6 +6,8 @@ github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3v
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/permguard/permguard-core v0.0.0-20240920175525-2908d9252344 h1:R2HtPkbQMYbkwkjKSakxbLADru0Ws88prYoFufT+8Sk=
 github.com/permguard/permguard-core v0.0.0-20240920175525-2908d9252344/go.mod h1:pkHKLbHxsR496FUZaFPxyXmSAivQdhSl42F0NixZFeY=
+github.com/permguard/permguard-core v0.0.0-20241001200907-299fec851e6b h1:LhschKlSFYQWW73Rs6Rn13MUlMgZ3eyGo95hKIQ28y0=
+github.com/permguard/permguard-core v0.0.0-20241001200907-299fec851e6b/go.mod h1:L/xLAgPizYnmnSZ/UIPFeel4p/s6856k5QMcyLauaF8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=

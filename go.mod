@@ -1,9 +1,9 @@
 module github.com/permguard/permguard-notp-protocol
 
-go 1.23.0
+go 1.23.2
 
 require (
-	github.com/permguard/permguard-core v0.0.0-20240920175525-2908d9252344
+	github.com/permguard/permguard-core v0.0.0-20241001200907-299fec851e6b
 	github.com/stretchr/testify v1.9.0
 )
 
