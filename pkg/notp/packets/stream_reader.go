@@ -72,7 +72,7 @@ func (p *DataPacketState) GetPacketType() uint64 {
 
 // IsComplete returns true if the data packet is complete.
 func (p *DataPacketState) IsComplete() bool {
-	return p.packetStreamSize-1 == p.packetStreamIndex
+	return p.packetStreamSize - 1 == p.packetStreamIndex
 }
 
 // ReadNextDataPacket read next data packet.

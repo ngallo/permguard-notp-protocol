@@ -49,13 +49,13 @@ const (
 	// ProcessNotifyObjectsStateID represents the state ID for the process notify objects state.
 	ProcessNotifyObjectsStateID = uint16(16)
 	// SubscriberNegotiationStateID represents the state ID for the subscriber negotiation state.
-	SubscriberNegotiationStateID = uint16(19)
+	SubscriberNegotiationStateID = uint16(17)
 	// SubscriberDataStreamStateID represents the state ID for the subscriber data stream state.
-	SubscriberDataStreamStateID = uint16(20)
+	SubscriberDataStreamStateID = uint16(18)
 	// PublisherNegotiationStateID represents the state ID for the publisher negotiation state.
-	PublisherNegotiationStateID = uint16(17)
+	PublisherNegotiationStateID = uint16(19)
 	// PublisherDataStreamStateID represents the state ID for the publisher data stream state.
-	PublisherDataStreamStateID = uint16(18)
+	PublisherDataStreamStateID = uint16(20)
 )
 
 // defaultStateMap represents the default state map for the state machine.
