@@ -72,7 +72,7 @@ func (w *PacketWriter) AppendDataPacket(packet Packetable) error {
 	}
 	dataType := packet.GetType()
 	data, err := packet.Serialize()
-	data = encodeByteArry(data)
+	data = EncodeByteArray(data)
 	if err != nil {
 		return err
 	}

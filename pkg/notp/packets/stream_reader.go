@@ -72,7 +72,7 @@ func (p *DataPacketState) GetPacketType() uint64 {
 
 // IsComplete returns true if the data packet is complete.
 func (p *DataPacketState) IsComplete() bool {
-	return p.packetStreamSize - 1 == p.packetStreamIndex
+	return p.packetStreamSize-1 == p.packetStreamIndex
 }
 
 // ReadNextDataPacket read next data packet.
@@ -100,7 +100,7 @@ func (w *PacketReader) ReadNextDataPacket(state *DataPacketState) ([]byte, *Data
 			packetStreamSize:  packetStreamSize,
 			packetStreamIndex: uint64(0),
 		}
-		return decodeByteArry(data), state, nil
+		return DecodeByteArray(data), state, nil
 	}
 	offset := state.offeset + state.size
 	payload, offset, size, packetType, err := readDataPacket(offset, data)
@@ -111,5 +111,5 @@ func (w *PacketReader) ReadNextDataPacket(state *DataPacketState) ([]byte, *Data
 	state.packetType = packetType
 	state.size = size
 	state.packetStreamIndex++
-	return decodeByteArry(payload), state, nil
+	return DecodeByteArray(payload), state, nil
 }

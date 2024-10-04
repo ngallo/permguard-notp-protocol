@@ -29,8 +29,8 @@ const (
 	PacketNullByte = 0xFF
 )
 
-// encodeByteArry encodes a byte array to a base64 string.
-func encodeByteArry(data []byte) []byte {
+// EncodeByteArray encodes a byte array to a base64 string.
+func EncodeByteArray(data []byte) []byte {
 	var buf bytes.Buffer
 	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
 	encoder.Write(data)
@@ -38,8 +38,8 @@ func encodeByteArry(data []byte) []byte {
 	return buf.Bytes()
 }
 
-// decodeByteArry decodes a base64 string to a byte array.
-func decodeByteArry(data []byte) []byte {
+// DecodeByteArray decodes a base64 string to a byte array.
+func DecodeByteArray(data []byte) []byte {
 	var buf bytes.Buffer
 	decoder := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(data))
 	_, err := buf.ReadFrom(decoder)

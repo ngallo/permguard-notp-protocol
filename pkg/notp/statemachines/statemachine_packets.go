@@ -90,7 +90,7 @@ func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeCo
 }
 
 // receiveAndHandleStatePacket receives a state packet and handles it.
-func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedState uint16) (*notpsmpackets.StatePacket, []notppackets.Packetable, error) {
+func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMessageCode uint16) (*notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	handlerCtx := &HandlerContext{
 		flow:           runtime.GetFlowType(),
 		currentStateID: runtime.GetCurrentStateID(),
@@ -111,7 +111,7 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedSt
 	if statePacket.HasError() {
 		return nil, nil, fmt.Errorf("notp: received state packet with error: %d", statePacket.ErrorCode)
 	}
-	if statePacket.MessageCode != expectedState {
+	if statePacket.MessageCode != expectedMessageCode {
 		return nil, nil, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}
 	var handledPacketables []notppackets.Packetable
