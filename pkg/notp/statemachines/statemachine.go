@@ -33,6 +33,7 @@ const (
 type HandlerContext struct {
 	flow           FlowType
 	currentStateID uint16
+	bag 		   map[string]interface{}
 }
 
 // GetFlowType returns the flow type of the handler context.
@@ -43,6 +44,23 @@ func (h *HandlerContext) GetFlowType() FlowType {
 // GetCurrentStateID returns the current state ID of the handler context.
 func (h *HandlerContext) GetCurrentStateID() uint16 {
 	return h.currentStateID
+}
+
+// Set stores a key-value pair in the runtime context of the state machine.
+func (h *HandlerContext) Set(key string, value interface{}) {
+    if h.bag == nil {
+        h.bag = make(map[string]interface{})
+    }
+    h.bag[key] = value
+}
+
+// Get retrieves the value associated with the specified key from the runtime context.
+func (h *HandlerContext) Get(key string) (interface{}, bool) {
+    if h.bag == nil {
+        return nil, false
+    }
+    value, exists := h.bag[key]
+    return value, exists
 }
 
 // PacketCreatorFunc is a function that creates a packet.
