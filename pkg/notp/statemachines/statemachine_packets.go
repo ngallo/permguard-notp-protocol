@@ -24,10 +24,11 @@ import (
 )
 
 // createStatePacket creates a state packet.
-func createStatePacket(flow FlowType, currentStateID uint16, messageCode uint16, messageValue uint64) (*notpsmpackets.StatePacket, *HandlerContext, error) {
+func createStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64) (*notpsmpackets.StatePacket, *HandlerContext, error) {
 	handlerCtx := &HandlerContext{
-		flow:           flow,
-		currentStateID: currentStateID,
+		flow:           runtime.GetFlowType(),
+		bag:			runtime.bag,
+		currentStateID: runtime.GetCurrentStateID(),
 	}
 	packet := &notpsmpackets.StatePacket{
 		MessageCode:  messageCode,
@@ -44,7 +45,7 @@ func shouldHandlePacket(packet *notpsmpackets.StatePacket) bool {
 
 // createAndHandleStatePacket creates a state packet and handles it.
 func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64, packetables []notppackets.Packetable) (*notpsmpackets.StatePacket, []notppackets.Packetable, bool, error) {
-	statePacket, handlerCtx, err := createStatePacket(runtime.GetFlowType(), runtime.currentStateID, messageCode, messageValue)
+	statePacket, handlerCtx, err := createStatePacket(runtime, messageCode, messageValue)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("notp: failed to create state packet: %w", err)
 	}
@@ -95,6 +96,7 @@ func createAndHandleAndStreamStatePacketWithValue(runtime *StateMachineRuntimeCo
 func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMessageCode uint16) (*notpsmpackets.StatePacket, []notppackets.Packetable, error) {
 	handlerCtx := &HandlerContext{
 		flow:           runtime.GetFlowType(),
+		bag:            runtime.bag,
 		currentStateID: runtime.GetCurrentStateID(),
 	}
 	packetsStream, err := runtime.ReceiveStream()
