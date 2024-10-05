@@ -59,6 +59,8 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 		}
 		statePacket.MessageValue = handlerReturn.MessageValue
 		statePacket.ErrorCode = handlerReturn.ErrorCode
+	} else {
+		handledPacketables = packetables
 	}
 	return statePacket, handledPacketables, hasMore, nil
 }
