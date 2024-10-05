@@ -125,6 +125,8 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMe
 		}
 		statePacket.MessageValue = handlerReturn.MessageValue
 		statePacket.ErrorCode = handlerReturn.ErrorCode
+	} else {
+		handledPacketables = packetsStream[1:]
 	}
 	return statePacket, handledPacketables, nil
 }
