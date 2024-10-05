@@ -228,13 +228,13 @@ func subscriberNegotiationState(runtime *StateMachineRuntimeContext) (*StateTran
 	if err != nil {
 		return nil, fmt.Errorf("notp: subscribe negotiation failed to create and handle notify current state packet: %w", err)
 	}
-	_, _, err = receiveAndHandleStatePacket(runtime, notpsmpackets.RespondNegotiationRequestMessage)
+	statePacket, _, err := receiveAndHandleStatePacket(runtime, notpsmpackets.RespondNegotiationRequestMessage)
 	if err != nil {
 		return nil, fmt.Errorf("notp: subscribe negotiation failed to receive and handle respond current state packet: %w", err)
 	}
-	// if !statePacket.HasAck() {
-	// 	return nil, fmt.Errorf("notp: subscribe negotiation failed to receive ack in respond negotiation request packet")
-	// }
+	if !statePacket.HasAck() {
+		return nil, fmt.Errorf("notp: subscribe negotiation failed to receive ack in respond negotiation request packet")
+	}
 	stateID := SubscriberDataStreamStateID
 	return &StateTransitionInfo{
 		Runtime: runtime,
