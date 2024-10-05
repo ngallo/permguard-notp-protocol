@@ -39,6 +39,9 @@ const (
 	// CompletedDataStreamValue indicates that the data stream is completed.
 	CompletedDataStreamValue = uint32(4)
 
+	// FlowIDValue represents the flow ID.
+	FlowIDValue = uint32(10)
+
 	// StartFlowMessage represents the notification of the flow.
 	StartFlowMessage = uint16(100)
 	// ActionResponseMessage represents the response to an action.

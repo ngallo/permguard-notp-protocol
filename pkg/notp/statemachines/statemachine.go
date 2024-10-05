@@ -109,6 +109,7 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint64) *StateMachineR
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
+		bag: 			t.bag,
 	}
 }
 
@@ -123,6 +124,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
+		bag: 			t.bag,
 	}
 }
 
@@ -137,6 +139,7 @@ func (t *StateMachineRuntimeContext) withCurrentState(currentStateID uint16) *St
 		initialStateID: t.initialStateID,
 		currentStateID: currentStateID,
 		hostHandler:    t.hostHandler,
+		bag: 			t.bag,
 	}
 }
 
@@ -151,6 +154,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
+		bag: 			t.bag,
 	}
 }
 
