@@ -17,6 +17,8 @@
 package statemachines
 
 import (
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
@@ -74,9 +76,22 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 	SubscriberDataStreamStateID:  subscriberDataStreamState,
 }
 
+// generateFlowID generates a flow ID.
+func generateFlowID() uint64 {
+    var n uint64
+    binary.Read(rand.Reader, binary.BigEndian, &n)
+    return n
+}
+
 // startFlowState state to start the flow.
 func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	_, err := createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.StartFlowMessage, uint64(runtime.flowType), nil)
+	flowID := generateFlowID()
+	flowPacket := &notpsmpackets.StatePacket {
+		MessageCode: notpsmpackets.FlowIDValue,
+		MessageValue: flowID,
+	}
+	runtime.Set("flowID", flowID)
+	_, err := createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.StartFlowMessage, uint64(runtime.flowType), []notppackets.Packetable{flowPacket})
 	if err != nil {
 		return nil, fmt.Errorf("notp: start flow failed to create and handle start flow packet: %w", err)
 	}
@@ -108,6 +123,13 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if err != nil {
 		return nil, fmt.Errorf("notp: process start flow failed to receive and handle start flow packet: %w", err)
 	}
+	flowPacket := &notpsmpackets.StatePacket {}
+	data, err := packetables[0].Serialize()
+	flowPacket.Deserialize(data)
+	if flowPacket.MessageCode != notpsmpackets.FlowIDValue {
+		return nil, fmt.Errorf("notp: process start flow failed to deserialize flow packet")
+	}
+	runtime.Set("flowID", flowPacket.MessageValue)
 	messageValue := notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
 	_, err = createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.ActionResponseMessage, messageValue, packetables)
 	if err != nil {
