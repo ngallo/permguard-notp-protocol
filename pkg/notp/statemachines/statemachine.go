@@ -33,7 +33,7 @@ const (
 type HandlerContext struct {
 	flow           FlowType
 	currentStateID uint16
-	bag 		   map[string]interface{}
+	bag            map[string]interface{}
 }
 
 // GetFlowType returns the flow type of the handler context.
@@ -48,19 +48,28 @@ func (h *HandlerContext) GetCurrentStateID() uint16 {
 
 // Set stores a key-value pair in the runtime context of the state machine.
 func (h *HandlerContext) Set(key string, value interface{}) {
-    if h.bag == nil {
-        h.bag = make(map[string]interface{})
-    }
-    h.bag[key] = value
+	if h.bag == nil {
+		h.bag = make(map[string]interface{})
+	}
+	h.bag[key] = value
 }
 
 // Get retrieves the value associated with the specified key from the runtime context.
-func (h *HandlerContext) Get(key string) (interface{}, bool) {
+func (h *HandlerContext) Get[T any](key string) (T, bool) {
+    var zero T
     if h.bag == nil {
-        return nil, false
+        return zero, false
     }
     value, exists := h.bag[key]
-    return value, exists
+    if !exists {
+        return zero, false
+    }
+    // Esegui un assert sul tipo generico
+    result, ok := value.(T)
+    if !ok {
+        return zero, false
+    }
+    return result, true
 }
 
 // PacketCreatorFunc is a function that creates a packet.
@@ -112,8 +121,7 @@ type StateMachineRuntimeContext struct {
 	initialStateID uint16
 	currentStateID uint16
 	hostHandler    HostHandler
-	bag 		   map[string]interface{}
-
+	bag            map[string]interface{}
 }
 
 // WithInput returns the state machine runtime context with the input value.
@@ -127,7 +135,7 @@ func (t *StateMachineRuntimeContext) WithInput(inputValue uint64) *StateMachineR
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
-		bag: 			t.bag,
+		bag:            t.bag,
 	}
 }
 
@@ -142,7 +150,7 @@ func (t *StateMachineRuntimeContext) WithFlow(flowType FlowType) *StateMachineRu
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
-		bag: 			t.bag,
+		bag:            t.bag,
 	}
 }
 
@@ -157,7 +165,7 @@ func (t *StateMachineRuntimeContext) withCurrentState(currentStateID uint16) *St
 		initialStateID: t.initialStateID,
 		currentStateID: currentStateID,
 		hostHandler:    t.hostHandler,
-		bag: 			t.bag,
+		bag:            t.bag,
 	}
 }
 
@@ -172,7 +180,7 @@ func (t *StateMachineRuntimeContext) WithFinal() *StateMachineRuntimeContext {
 		initialStateID: t.initialStateID,
 		currentStateID: t.currentStateID,
 		hostHandler:    t.hostHandler,
-		bag: 			t.bag,
+		bag:            t.bag,
 	}
 }
 
@@ -193,19 +201,19 @@ func (t *StateMachineRuntimeContext) GetCurrentStateID() uint16 {
 
 // Set stores a key-value pair in the runtime context of the state machine.
 func (t *StateMachineRuntimeContext) Set(key string, value interface{}) {
-    if t.bag == nil {
-        t.bag = make(map[string]interface{})
-    }
-    t.bag[key] = value
+	if t.bag == nil {
+		t.bag = make(map[string]interface{})
+	}
+	t.bag[key] = value
 }
 
 // Get retrieves the value associated with the specified key from the runtime context.
-func (t *StateMachineRuntimeContext) Get(key string) (interface{}, bool) {
-    if t.bag == nil {
-        return nil, false
-    }
-    value, exists := t.bag[key]
-    return value, exists
+func (t *StateMachineRuntimeContext) Get(key string) (any, bool) {
+	if t.bag == nil {
+		return nil, false
+	}
+	value, exists := t.bag[key]
+	return value, exists
 }
 
 // Send sends a packet through the transport layer.
