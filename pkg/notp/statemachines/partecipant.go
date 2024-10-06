@@ -30,7 +30,7 @@ type FlowType uint64
 
 const (
 	// FlowIDKey represents the flow ID key.
-	FlowIDKey = "FLOW-ID"
+	FlowIDKey = "flowid"
 
 	// UnknownFlowType represents an unknown state machine type.
 	UnknownFlowType FlowType = 0
