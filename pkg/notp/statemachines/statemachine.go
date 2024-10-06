@@ -256,7 +256,10 @@ type StateMachine struct {
 }
 
 // Run starts and runs the state machine through its states until termination.
-func (m *StateMachine) Run(inputValue FlowType) error {
+func (m *StateMachine) Run(bag map[string]any, inputValue FlowType) error {
+	if bag != nil {
+		m.runtime.bag = bag
+	}
 	runtime := m.runtime
 	runtime = runtime.WithFlow(inputValue)
 	stateID := runtime.initialStateID
