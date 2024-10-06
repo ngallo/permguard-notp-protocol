@@ -223,13 +223,13 @@ func TestPullProtocolExecution(t *testing.T) {
 
 			go func() {
 				defer wg.Done()
-				err := sMInfo.follower.Run(test.flowType)
+				err := sMInfo.follower.Run(nil, test.flowType)
 				assert.Nil(err, "Failed to run the follower state machine")
 			}()
 
 			go func() {
 				defer wg.Done()
-				err := sMInfo.leader.Run(UnknownFlowType)
+				err := sMInfo.leader.Run(nil, UnknownFlowType)
 				assert.Nil(err, "Failed to run the leader state machine")
 			}()
 
