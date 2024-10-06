@@ -55,21 +55,12 @@ func (h *HandlerContext) Set(key string, value interface{}) {
 }
 
 // Get retrieves the value associated with the specified key from the runtime context.
-func (h *HandlerContext) Get[T any](key string) (T, bool) {
-    var zero T
-    if h.bag == nil {
-        return zero, false
-    }
-    value, exists := h.bag[key]
-    if !exists {
-        return zero, false
-    }
-    // Esegui un assert sul tipo generico
-    result, ok := value.(T)
-    if !ok {
-        return zero, false
-    }
-    return result, true
+func (h *HandlerContext) Get(key string) (any, bool) {
+	if h.bag == nil {
+		return nil, false
+	}
+	value, exists := h.bag[key]
+	return value, exists
 }
 
 // PacketCreatorFunc is a function that creates a packet.
