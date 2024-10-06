@@ -29,6 +29,9 @@ import (
 type FlowType uint64
 
 const (
+	// FlowIDKey represents the flow ID key.
+	FlowIDKey = "FLOW-ID"
+
 	// UnknownFlowType represents an unknown state machine type.
 	UnknownFlowType FlowType = 0
 	// PushFlowType represents the push state machine type.
@@ -90,7 +93,7 @@ func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, 
 		MessageCode: notpsmpackets.FlowIDValue,
 		MessageValue: flowID,
 	}
-	runtime.Set("flowID", flowID)
+	runtime.Set(FlowIDKey, flowID)
 	_, err := createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.StartFlowMessage, uint64(runtime.flowType), []notppackets.Packetable{flowPacket})
 	if err != nil {
 		return nil, fmt.Errorf("notp: start flow failed to create and handle start flow packet: %w", err)
@@ -129,7 +132,7 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if flowPacket.MessageCode != notpsmpackets.FlowIDValue {
 		return nil, fmt.Errorf("notp: process start flow failed to deserialize flow packet")
 	}
-	runtime.Set("flowID", flowPacket.MessageValue)
+	runtime.Set(FlowIDKey, flowPacket.MessageValue)
 	messageValue := notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.UnknownValue)
 	_, err = createAndHandleAndStreamStatePacketWithValue(runtime, notpsmpackets.ActionResponseMessage, messageValue, packetables)
 	if err != nil {
