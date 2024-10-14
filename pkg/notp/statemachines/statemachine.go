@@ -72,6 +72,7 @@ type HostHandlerRuturn struct {
 	MessageValue uint64
 	ErrorCode    uint16
 	Packetables  []notppackets.Packetable
+	Terminate	 bool
 }
 
 // HostHandler defines a function type for handling packet.
