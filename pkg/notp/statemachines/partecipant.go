@@ -382,12 +382,12 @@ func publisherDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransi
 
 // subscriberCommitState state to commit the current state.
 func subscriberCommitState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	_, _, terminate, err := receiveAndHandleStatePacket(runtime, notpsmpackets.CommitMessage)
+	_, terminate, err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.CommitMessage, nil)
 	if terminate {
 		return terminateWithFinal(runtime)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("notp: subscriber commit failed to receive and handle respond current state packet: %w", err)
+		return nil, fmt.Errorf("notp: publisher commit failed to create and handle respond current state packet: %w", err)
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
@@ -397,12 +397,12 @@ func subscriberCommitState(runtime *StateMachineRuntimeContext) (*StateTransitio
 
 // publisherCommitState state to commit the current state.
 func publisherCommitState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
-	_, terminate, err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.CommitMessage, nil)
+	_, _, terminate, err := receiveAndHandleStatePacket(runtime, notpsmpackets.CommitMessage)
 	if terminate {
 		return terminateWithFinal(runtime)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("notp: publisher commit failed to create and handle respond current state packet: %w", err)
+		return nil, fmt.Errorf("notp: subscriber commit failed to receive and handle respond current state packet: %w", err)
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
