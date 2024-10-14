@@ -63,6 +63,9 @@ const (
 
 	// ExchangeDataStreamMessage represents the exchange of data stream.
 	ExchangeDataStreamMessage = uint16(170)
+
+	// CommitMessage represents the commit message.
+	CommitMessage = uint16(200)
 )
 
 // StatePacket encapsulates the data structure for a base packet used in the protocol.

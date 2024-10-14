@@ -46,21 +46,25 @@ const (
 	// ProcessStartFlowStateID represents the state ID for the process start flow state.
 	ProcessStartFlowStateID = uint16(11)
 	// RequestObjectsStateID represents the state ID for the request objects state.
-	RequestObjectsStateID = uint16(13)
+	RequestObjectsStateID = uint16(12)
 	// ProcessRequestObjectsStateID represents the state ID for the process request objects state.
-	ProcessRequestObjectsStateID = uint16(14)
+	ProcessRequestObjectsStateID = uint16(13)
 	// NotifyObjectsStateID represents the state ID for the notify objects state.
-	NotifyObjectsStateID = uint16(15)
+	NotifyObjectsStateID = uint16(14)
 	// ProcessNotifyObjectsStateID represents the state ID for the process notify objects state.
-	ProcessNotifyObjectsStateID = uint16(16)
+	ProcessNotifyObjectsStateID = uint16(15)
 	// SubscriberNegotiationStateID represents the state ID for the subscriber negotiation state.
-	SubscriberNegotiationStateID = uint16(17)
+	SubscriberNegotiationStateID = uint16(16)
 	// SubscriberDataStreamStateID represents the state ID for the subscriber data stream state.
-	SubscriberDataStreamStateID = uint16(18)
+	SubscriberDataStreamStateID = uint16(17)
+	// SubscriberCommitStateID represents the state ID for the subscriber commit state.
+	SubscriberCommitStateID = uint16(18)
 	// PublisherNegotiationStateID represents the state ID for the publisher negotiation state.
 	PublisherNegotiationStateID = uint16(19)
 	// PublisherDataStreamStateID represents the state ID for the publisher data stream state.
 	PublisherDataStreamStateID = uint16(20)
+	// PublisherCommitStateID represents the published commit state ID.
+	PublisherCommitStateID = uint16(21)
 )
 
 // defaultStateMap represents the default state map for the state machine.
@@ -75,8 +79,10 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 	ProcessNotifyObjectsStateID:  processNotifyObjectsState,
 	PublisherNegotiationStateID:  publisherNegotiationState,
 	PublisherDataStreamStateID:   publisherDataStreamState,
+	PublisherCommitStateID: 	  publisherCommitState,
 	SubscriberNegotiationStateID: subscriberNegotiationState,
 	SubscriberDataStreamStateID:  subscriberDataStreamState,
+	SubscriberCommitStateID:      subscriberCommitState,
 }
 
 // generateFlowID generates a flow ID.
@@ -355,7 +361,7 @@ func subscriberDataStreamState(runtime *StateMachineRuntimeContext) (*StateTrans
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,
-		StateID: FinalStateID,
+		StateID: SubscriberCommitStateID,
 	}, nil
 }
 
@@ -367,6 +373,36 @@ func publisherDataStreamState(runtime *StateMachineRuntimeContext) (*StateTransi
 	}
 	if err != nil {
 		return nil, fmt.Errorf("notp: publisher data stream failed to create and handle respond current state packet: %w", err)
+	}
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: PublisherCommitStateID,
+	}, nil
+}
+
+// subscriberCommitState state to commit the current state.
+func subscriberCommitState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	_, _, terminate, err := receiveAndHandleStatePacket(runtime, notpsmpackets.CommitMessage)
+	if terminate {
+		return terminateWithFinal(runtime)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("notp: subscriber commit failed to receive and handle respond current state packet: %w", err)
+	}
+	return &StateTransitionInfo{
+		Runtime: runtime,
+		StateID: FinalStateID,
+	}, nil
+}
+
+// publisherCommitState state to commit the current state.
+func publisherCommitState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
+	_, terminate, err := createAndHandleAndStreamStatePacket(runtime, notpsmpackets.CommitMessage, nil)
+	if terminate {
+		return terminateWithFinal(runtime)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("notp: publisher commit failed to create and handle respond current state packet: %w", err)
 	}
 	return &StateTransitionInfo{
 		Runtime: runtime,

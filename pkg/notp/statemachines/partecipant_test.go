@@ -106,8 +106,8 @@ func TestPullProtocolExecution(t *testing.T) {
 			name: "PullFlowType",
             flowType: PullFlowType,
 			followerSent: 3,
-			followerReceived: 7,
-			leaderSent: 7,
+			followerReceived: 8,
+			leaderSent: 8,
 			leaderReceived: 3,
             expectedFollowerIDs: []uint16{
                 RequestObjectsStateID,
@@ -118,6 +118,8 @@ func TestPullProtocolExecution(t *testing.T) {
 				SubscriberDataStreamStateID,
 				SubscriberDataStreamStateID,
 				SubscriberDataStreamStateID,
+				SubscriberCommitStateID,
+				SubscriberCommitStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessRequestObjectsStateID,
@@ -128,15 +130,17 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherDataStreamStateID,
 				PublisherDataStreamStateID,
 				PublisherDataStreamStateID,
+				PublisherCommitStateID,
+				PublisherCommitStateID,
             },
         },
         {
 			name: "PushFlowType",
             flowType: PushFlowType,
-			followerSent: 7,
+			followerSent: 8,
 			followerReceived: 3,
 			leaderSent: 3,
-			leaderReceived: 7,
+			leaderReceived: 8,
             expectedFollowerIDs: []uint16{
                 NotifyObjectsStateID,
 				NotifyObjectsStateID,
@@ -146,6 +150,8 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherDataStreamStateID,
 				PublisherDataStreamStateID,
 				PublisherDataStreamStateID,
+				PublisherCommitStateID,
+				PublisherCommitStateID,
             },
             expectedLeaderIDs: []uint16{
                 ProcessNotifyObjectsStateID,
@@ -156,6 +162,8 @@ func TestPullProtocolExecution(t *testing.T) {
 				SubscriberDataStreamStateID,
 				SubscriberDataStreamStateID,
 				SubscriberDataStreamStateID,
+				SubscriberCommitStateID,
+				SubscriberCommitStateID,
             },
         },
     }
