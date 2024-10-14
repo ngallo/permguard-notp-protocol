@@ -121,6 +121,9 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMe
 	if statePacket.HasError() {
 		return nil, nil, false, fmt.Errorf("notp: received state packet with error: %d", statePacket.ErrorCode)
 	}
+	if statePacket.MessageCode == notpsmpackets.TerminateMessage {
+		return nil, nil, true, nil
+	}
 	if statePacket.MessageCode != expectedMessageCode {
 		return nil, nil, false, fmt.Errorf("notp: received unexpected state code: %d", statePacket.MessageCode)
 	}

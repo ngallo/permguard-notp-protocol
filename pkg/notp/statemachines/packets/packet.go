@@ -46,6 +46,8 @@ const (
 	StartFlowMessage = uint16(100)
 	// ActionResponseMessage represents the response to an action.
 	ActionResponseMessage = uint16(101)
+	// TerminateMessage represents the termination of the flow.
+	TerminateMessage = uint16(102)
 
 	// NotifyCurrentObjectStatesMessage represents the notification of the current object states.
 	NotifyCurrentObjectStatesMessage = uint16(111)
