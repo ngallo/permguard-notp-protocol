@@ -54,7 +54,11 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
 		if handlerReturn.Terminate {
-			return nil, nil, false, true, nil
+			statePacket := &notpsmpackets.StatePacket{
+				MessageCode: notpsmpackets.TerminateMessage,
+			}
+			err := runtime.Send(statePacket)
+			return nil, nil, false, true, err
 		}
 		hasMore = handlerReturn.HasMore
 		handledPacketables = handlerReturn.Packetables
@@ -131,7 +135,11 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMe
 	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
 		if handlerReturn.Terminate {
-			return nil, nil, true, nil
+			statePacket := &notpsmpackets.StatePacket{
+				MessageCode: notpsmpackets.TerminateMessage,
+			}
+			err := runtime.Send(statePacket)
+			return nil, nil, true, err
 		}
 		handledPacketables = handlerReturn.Packetables
 		if err != nil {
