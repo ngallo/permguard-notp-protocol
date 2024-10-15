@@ -105,10 +105,10 @@ func TestPullProtocolExecution(t *testing.T) {
         {
 			name: "PullFlowType",
             flowType: PullFlowType,
-			followerSent: 3,
-			followerReceived: 8,
-			leaderSent: 8,
-			leaderReceived: 3,
+			followerSent: 4,
+			followerReceived: 7,
+			leaderSent: 7,
+			leaderReceived: 4,
             expectedFollowerIDs: []uint16{
                 RequestObjectsStateID,
 				RequestObjectsStateID,
@@ -137,10 +137,10 @@ func TestPullProtocolExecution(t *testing.T) {
         {
 			name: "PushFlowType",
             flowType: PushFlowType,
-			followerSent: 8,
-			followerReceived: 3,
-			leaderSent: 3,
-			leaderReceived: 8,
+			followerSent: 7,
+			followerReceived: 4,
+			leaderSent: 4,
+			leaderReceived: 7,
             expectedFollowerIDs: []uint16{
                 NotifyObjectsStateID,
 				NotifyObjectsStateID,
