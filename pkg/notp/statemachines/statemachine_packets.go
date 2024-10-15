@@ -144,10 +144,12 @@ func receiveAndHandleStatePacket(runtime *StateMachineRuntimeContext, expectedMe
 	var handledPacketables []notppackets.Packetable
 	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetsStream[1:])
-		if handlerReturn.Terminate {
-			return nil, nil, true, nil
+		if handlerReturn != nil {
+			if handlerReturn.Terminate {
+				return nil, nil, true, nil
+			}
+			handledPacketables = handlerReturn.Packetables
 		}
-		handledPacketables = handlerReturn.Packetables
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("notp: failed to handle created packet: %w", err)
 		}
