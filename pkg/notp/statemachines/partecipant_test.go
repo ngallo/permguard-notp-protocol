@@ -90,27 +90,27 @@ func buildCommitStateMachines(assert *assert.Assertions, followerHandler HostHan
 
 // TestPullProtocolExecution verifies the state machine execution for both follower and leader in the context of a pull operation.
 func TestPullProtocolExecution(t *testing.T) {
-    assert := assert.New(t)
+	assert := assert.New(t)
 
-    tests := []struct {
-		name				string
-        flowType           	FlowType
-		followerSent		int
-		followerReceived	int
-		leaderSent 			int
-		leaderReceived 		int
-        expectedFollowerIDs []uint16
-        expectedLeaderIDs   []uint16
-    }{
-        {
-			name: "PullFlowType",
-            flowType: PullFlowType,
-			followerSent: 4,
+	tests := []struct {
+		name                string
+		flowType            FlowType
+		followerSent        int
+		followerReceived    int
+		leaderSent          int
+		leaderReceived      int
+		expectedFollowerIDs []uint16
+		expectedLeaderIDs   []uint16
+	}{
+		{
+			name:             "PullFlowType",
+			flowType:         PullFlowType,
+			followerSent:     4,
 			followerReceived: 7,
-			leaderSent: 7,
-			leaderReceived: 4,
-            expectedFollowerIDs: []uint16{
-                RequestObjectsStateID,
+			leaderSent:       7,
+			leaderReceived:   4,
+			expectedFollowerIDs: []uint16{
+				RequestObjectsStateID,
 				RequestObjectsStateID,
 				SubscriberNegotiationStateID,
 				SubscriberNegotiationStateID,
@@ -120,9 +120,9 @@ func TestPullProtocolExecution(t *testing.T) {
 				SubscriberDataStreamStateID,
 				SubscriberCommitStateID,
 				SubscriberCommitStateID,
-            },
-            expectedLeaderIDs: []uint16{
-                ProcessRequestObjectsStateID,
+			},
+			expectedLeaderIDs: []uint16{
+				ProcessRequestObjectsStateID,
 				ProcessRequestObjectsStateID,
 				PublisherNegotiationStateID,
 				PublisherNegotiationStateID,
@@ -132,17 +132,17 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherDataStreamStateID,
 				PublisherCommitStateID,
 				PublisherCommitStateID,
-            },
-        },
-        {
-			name: "PushFlowType",
-            flowType: PushFlowType,
-			followerSent: 7,
+			},
+		},
+		{
+			name:             "PushFlowType",
+			flowType:         PushFlowType,
+			followerSent:     7,
 			followerReceived: 4,
-			leaderSent: 4,
-			leaderReceived: 7,
-            expectedFollowerIDs: []uint16{
-                NotifyObjectsStateID,
+			leaderSent:       4,
+			leaderReceived:   7,
+			expectedFollowerIDs: []uint16{
+				NotifyObjectsStateID,
 				NotifyObjectsStateID,
 				PublisherNegotiationStateID,
 				PublisherNegotiationStateID,
@@ -152,9 +152,9 @@ func TestPullProtocolExecution(t *testing.T) {
 				PublisherDataStreamStateID,
 				PublisherCommitStateID,
 				PublisherCommitStateID,
-            },
-            expectedLeaderIDs: []uint16{
-                ProcessNotifyObjectsStateID,
+			},
+			expectedLeaderIDs: []uint16{
+				ProcessNotifyObjectsStateID,
 				ProcessNotifyObjectsStateID,
 				SubscriberNegotiationStateID,
 				SubscriberNegotiationStateID,
@@ -164,28 +164,28 @@ func TestPullProtocolExecution(t *testing.T) {
 				SubscriberDataStreamStateID,
 				SubscriberCommitStateID,
 				SubscriberCommitStateID,
-            },
-        },
-    }
+			},
+		},
+	}
 
-    for _, test := range tests {
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			followerIDs := []uint16{}
 			leaderIDs := []uint16{}
 
 			streamSize := 3
-			followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
+			followerHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerReturn, error) {
 				currentStateID := handlerCtx.GetCurrentStateID()
 				followerIDs = append(followerIDs, currentStateID)
 				packet := &notppackets.Packet{
 					Data: []byte("sample data"),
 				}
-				handlerReturn := &HostHandlerRuturn {
+				handlerReturn := &HostHandlerReturn{
 					Packetables: []notppackets.Packetable{packet},
 				}
 				if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID && handlerCtx.GetFlowType() == PushFlowType {
 					if streamSize > 0 {
-						handlerReturn.MessageValue  = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
+						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
 						handlerReturn.HasMore = true
 					} else {
 						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.CompletedDataStreamValue)
@@ -200,17 +200,17 @@ func TestPullProtocolExecution(t *testing.T) {
 				return handlerReturn, nil
 			}
 
-			leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerRuturn, error) {
+			leaderHandler := func(handlerCtx *HandlerContext, statePacket *notpsmpackets.StatePacket, packets []notppackets.Packetable) (*HostHandlerReturn, error) {
 				currentStateID := handlerCtx.GetCurrentStateID()
 				leaderIDs = append(leaderIDs, currentStateID)
-				handlerReturn := &HostHandlerRuturn {
+				handlerReturn := &HostHandlerReturn{
 					Packetables: packets,
 				}
 				if handlerCtx.GetCurrentStateID() == SubscriberDataStreamStateID && handlerCtx.GetFlowType() == PushFlowType {
 					handlerReturn.MessageValue = statePacket.MessageValue
 				} else if handlerCtx.GetCurrentStateID() == PublisherDataStreamStateID && handlerCtx.GetFlowType() == PullFlowType {
 					if streamSize > 0 {
-						handlerReturn.MessageValue  = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
+						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.ActiveDataStreamValue)
 						handlerReturn.HasMore = true
 					} else {
 						handlerReturn.MessageValue = notppackets.CombineUint32toUint64(notpsmpackets.AcknowledgedValue, notpsmpackets.CompletedDataStreamValue)
@@ -231,13 +231,13 @@ func TestPullProtocolExecution(t *testing.T) {
 
 			go func() {
 				defer wg.Done()
-				err := sMInfo.follower.Run(nil, test.flowType)
+				_, err := sMInfo.follower.Run(nil, test.flowType)
 				assert.Nil(err, "Failed to run the follower state machine")
 			}()
 
 			go func() {
 				defer wg.Done()
-				err := sMInfo.leader.Run(nil, UnknownFlowType)
+				_, err := sMInfo.leader.Run(nil, UnknownFlowType)
 				assert.Nil(err, "Failed to run the leader state machine")
 			}()
 
@@ -255,5 +255,5 @@ func TestPullProtocolExecution(t *testing.T) {
 				assert.Equal(test.expectedLeaderIDs[i], id, "Leader state ID")
 			}
 		})
-    }
+	}
 }
