@@ -256,7 +256,7 @@ type StateMachine struct {
 }
 
 // Run starts and runs the state machine through its states until termination.
-func (m *StateMachine) Run(bag map[string]any, inputValue FlowType) error {
+func (m *StateMachine) Run(bag map[string]any, inputValue FlowType) (*StateMachineRuntimeContext, error) {
 	if bag != nil {
 		m.runtime.bag = bag
 	}
@@ -268,7 +268,7 @@ func (m *StateMachine) Run(bag map[string]any, inputValue FlowType) error {
 		runtime = runtime.withCurrentState(stateID)
 		nextStateInfo, err := state(runtime)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		runtime = nextStateInfo.Runtime
 		if runtime.IsFinal() {
@@ -277,7 +277,7 @@ func (m *StateMachine) Run(bag map[string]any, inputValue FlowType) error {
 		stateID = nextStateInfo.StateID
 		state = m.runtime.statemap[nextStateInfo.StateID]
 	}
-	return nil
+	return runtime, nil
 }
 
 // NewStateMachine creates and initializes a new state machine with the given initial state and transport layer.
