@@ -53,12 +53,14 @@ func createAndHandleStatePacket(runtime *StateMachineRuntimeContext, messageCode
 	hasMore := false
 	if shouldHandlePacket(statePacket) {
 		handlerReturn, err := runtime.HandleStream(handlerCtx, statePacket, packetables)
-		if handlerReturn.Terminate {
-			err := sendTermination(runtime)
-			return nil, nil, false, true, err
+		if handlerReturn != nil {
+			if handlerReturn.Terminate {
+				err := sendTermination(runtime)
+				return nil, nil, false, true, err
+			}
+			hasMore = handlerReturn.HasMore
+			handledPacketables = handlerReturn.Packetables
 		}
-		hasMore = handlerReturn.HasMore
-		handledPacketables = handlerReturn.Packetables
 		if err != nil {
 			err := sendTermination(runtime)
 			return nil, nil, false, false, fmt.Errorf("notp: failed to handle created packet: %w", err)
