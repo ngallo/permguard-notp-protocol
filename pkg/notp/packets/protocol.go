@@ -16,14 +16,9 @@
 
 package packets
 
-import (
-	"bytes"
-	"encoding/binary"
-)
-
 // ProtocolPacket represents a protocol packet.
 type ProtocolPacket struct {
-	Version uint64
+	Version uint32
 }
 
 // GetType returns the type of the packet.
@@ -33,17 +28,16 @@ func (p *ProtocolPacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *ProtocolPacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	if err := binary.Write(buffer, binary.BigEndian, p.Version); err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	data := SerializeUint32(nil, p.Version, PacketNullByte)
+	return data, nil
+
 }
 
 // Deserialize deserializes the packet.
 func (p *ProtocolPacket) Deserialize(data []byte) error {
-	buffer := bytes.NewBuffer(data)
-	if err := binary.Read(buffer, binary.BigEndian, &p.Version); err != nil {
+	var err error
+	p.Version, data, err = DeserializeUint32(data, PacketNullByte)
+	if err != nil {
 		return err
 	}
 	return nil

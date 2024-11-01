@@ -33,7 +33,7 @@ func TestStatePacket(t *testing.T) {
 	}
 	data, err := stateInput.Serialize()
 	assert.NoError(err)
-	assert.Len(data, 12)
+	assert.Len(data, 15)
 
 	stateOutput := &StatePacket{}
 	err = stateOutput.Deserialize(data)

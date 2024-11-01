@@ -17,10 +17,6 @@
 package packets
 
 import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
@@ -102,48 +98,26 @@ func (p *StatePacket) HasError() bool {
 
 // Serialize serializes the packet into bytes.
 func (p *StatePacket) Serialize() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-
-	err := binary.Write(buffer, binary.BigEndian, p.MessageCode)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write StateCode: %v", err)
-	}
-
-	err = binary.Write(buffer, binary.BigEndian, p.MessageValue)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write StateValue: %v", err)
-	}
-
-	err = binary.Write(buffer, binary.BigEndian, p.ErrorCode)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write ErrorCode: %v", err)
-	}
-
-	return buffer.Bytes(), nil
+	data := notppackets.SerializeUint16(nil, p.MessageCode, notppackets.PacketNullByte)
+	data = notppackets.SerializeUint64(data, p.MessageValue, notppackets.PacketNullByte)
+	data = notppackets.SerializeUint16(data, p.ErrorCode, notppackets.PacketNullByte)
+	return data, nil
 }
 
 // Deserialize deserializes the packet from bytes.
 func (p *StatePacket) Deserialize(data []byte) error {
-	if len(data) < 12 {
-		return fmt.Errorf("buffer too small, need at least 12 bytes but got %d", len(data))
-	}
-
-	buffer := bytes.NewBuffer(data)
-
-	err := binary.Read(buffer, binary.BigEndian, &p.MessageCode)
+	var err error
+	p.MessageCode, data, err = notppackets.DeserializeUint16(data, notppackets.PacketNullByte)
 	if err != nil {
-		return fmt.Errorf("failed to read StateCode: %v", err)
+		return err
 	}
-
-	err = binary.Read(buffer, binary.BigEndian, &p.MessageValue)
+	p.MessageValue, data, err = notppackets.DeserializeUint64(data, notppackets.PacketNullByte)
 	if err != nil {
-		return fmt.Errorf("failed to read StateValue: %v", err)
+		return err
 	}
-
-	err = binary.Read(buffer, binary.BigEndian, &p.ErrorCode)
+	p.ErrorCode, data, err = notppackets.DeserializeUint16(data, notppackets.PacketNullByte)
 	if err != nil {
-		return fmt.Errorf("failed to read ErrorCode: %v", err)
+		return err
 	}
-
 	return nil
 }

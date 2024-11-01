@@ -62,6 +62,24 @@ func DeserializeString(data []byte, nullByte byte) (string, []byte, error) {
 	return string(DecodeByteArray(currentBuffer)), leftBuffer, nil
 }
 
+// SerializeBytes serializes bytes.
+func SerializeBytes(data []byte, value []byte, nullByte byte) []byte {
+	if data == nil {
+		data = make([]byte, 0)
+	}
+	data = append(data, value...)
+	return append(data, nullByte)
+}
+
+// DeserializeBytes deserializes a bytes.
+func DeserializeBytes(data []byte, nullByte byte) ([]byte, []byte, error) {
+	currentBuffer, leftBuffer, err := SplitData[[]byte](data, PacketNullByte)
+	if err != nil {
+		return nil, nil, fmt.Errorf("missing data for bytes")
+	}
+	return currentBuffer, leftBuffer, nil
+}
+
 // SerializeBool serializes a bool.
 func SerializeBool(data []byte, value bool, nullByte byte) []byte {
 	if data == nil {
@@ -91,7 +109,7 @@ func SerializeUint16(data []byte, value uint16, nullByte byte) []byte {
 	if data == nil {
 		data = make([]byte, 0)
 	}
-	input := make([]byte, 4)
+	input := make([]byte, 2)
 	binary.BigEndian.PutUint16(input, value)
 
 	data = append(data, input...)
@@ -133,7 +151,7 @@ func SerializeUint64(data []byte, value uint64, nullByte byte) []byte {
 	if data == nil {
 		data = make([]byte, 0)
 	}
-	input := make([]byte, 4)
+	input := make([]byte, 8)
 	binary.BigEndian.PutUint64(input, value)
 
 	data = append(data, input...)
