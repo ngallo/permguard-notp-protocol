@@ -91,10 +91,10 @@ func SerializeBool(data []byte, value bool, nullByte byte) []byte {
 
 // DeserializeBool deserializes a bool.
 func DeserializeBool(data []byte, nullByte byte) (bool, []byte, error) {
-	if len(data) != 1 {
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 1)
+	if len(currentBuffer) != 1 {
 		return false, nil, fmt.Errorf("missing data for bool")
 	}
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 1)
 	if err != nil {
 		return false, nil, fmt.Errorf("missing data for bool")
 	}
@@ -115,10 +115,10 @@ func SerializeUint16(data []byte, value uint16, nullByte byte) []byte {
 
 // DeserializeUint16 deserializes a uint16.
 func DeserializeUint16(data []byte, nullByte byte) (uint16, []byte, error) {
-	if len(data) != 2 {
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 2)
+	if len(currentBuffer) != 2 {
 		return 0, nil, fmt.Errorf("missing data for uint16")
 	}
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 2)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint16")
 	}
@@ -139,10 +139,10 @@ func SerializeUint32(data []byte, value uint32, nullByte byte) []byte {
 
 // DeserializeUint32 deserializes a uint32.
 func DeserializeUint32(data []byte, nullByte byte) (uint32, []byte, error) {
-	if len(data) != 4 {
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 4)
+	if len(currentBuffer) != 4 {
 		return 0, nil, fmt.Errorf("missing data for uint32")
 	}
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 4)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint32")
 	}
@@ -163,10 +163,10 @@ func SerializeUint64(data []byte, value uint64, nullByte byte) []byte {
 
 // DeserializeUint64 deserializes a uint64.
 func DeserializeUint64(data []byte, nullByte byte) (uint64, []byte, error) {
-	if len(data) != 8 {
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 8)
+	if len(currentBuffer) != 8 {
 		return 0, nil, fmt.Errorf("missing data for uint64")
 	}
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 8)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint64")
 	}
