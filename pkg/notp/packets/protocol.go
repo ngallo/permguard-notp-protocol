@@ -18,7 +18,7 @@ package packets
 
 // ProtocolPacket represents a protocol packet.
 type ProtocolPacket struct {
-	Version uint16
+	Version uint32
 }
 
 // GetType returns the type of the packet.
@@ -28,7 +28,7 @@ func (p *ProtocolPacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *ProtocolPacket) Serialize() ([]byte, error) {
-	data := SerializeUint16(nil, p.Version, PacketNullByte)
+	data := SerializeUint32(nil, p.Version, PacketNullByte)
 	return data, nil
 
 }
@@ -36,7 +36,7 @@ func (p *ProtocolPacket) Serialize() ([]byte, error) {
 // Deserialize deserializes the packet.
 func (p *ProtocolPacket) Deserialize(data []byte) error {
 	var err error
-	p.Version, data, err = DeserializeUint16(data, PacketNullByte)
+	p.Version, data, err = DeserializeUint32(data, PacketNullByte)
 	if err != nil {
 		return err
 	}
