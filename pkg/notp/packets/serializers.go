@@ -34,7 +34,11 @@ func SplitData[T any](data []byte, nullByte byte) ([]byte, []byte, error) {
 	var size int
 	switch any(*new(T)).(type) {
 	case string:
-		size = index // Usa l'indice effettivo del null byte
+		size = index
+	case []interface{}:
+		size = index
+	case *interface{}:
+		size = index
 	default:
 		size = int(unsafe.Sizeof(*new(T)))
 	}
