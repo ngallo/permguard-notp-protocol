@@ -20,29 +20,18 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"unsafe"
+	"math"
 )
 
 // SplitData splits the data.
-func SplitData[T any](data []byte, nullByte byte) ([]byte, []byte, error) {
+func SplitData[T any](data []byte, nullByte byte, expectedSize int) ([]byte, []byte, error) {
 	index := bytes.IndexByte(data, nullByte)
 	if index == -1 {
 		return nil, nil, fmt.Errorf("missing null byte")
 	}
 	currentData := data[:index]
 	leftData := data[index+1:]
-	var size int
-	switch any(*new(T)).(type) {
-	case string:
-		size = index
-	case []interface{}:
-		size = index
-	case *interface{}:
-		size = index
-	default:
-		size = int(unsafe.Sizeof(*new(T)))
-	}
-	if len(currentData) < size {
+	if len(currentData) < expectedSize {
 		return nil, nil, fmt.Errorf("invalid data: missing or invalid header")
 	}
 	return currentData, leftData, nil
@@ -59,7 +48,7 @@ func SerializeString(data []byte, value string, nullByte byte) []byte {
 
 // DeserializeString deserializes a string.
 func DeserializeString(data []byte, nullByte byte) (string, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[string](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[string](data, PacketNullByte, math.MaxInt64)
 	if err != nil {
 		return "", nil, fmt.Errorf("missing data for string")
 	}
@@ -77,7 +66,7 @@ func SerializeBytes(data []byte, value []byte, nullByte byte) []byte {
 
 // DeserializeBytes deserializes a bytes.
 func DeserializeBytes(data []byte, nullByte byte) ([]byte, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[[]byte](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[[]byte](data, PacketNullByte, math.MaxInt64)
 	if err != nil {
 		return nil, nil, fmt.Errorf("missing data for bytes")
 	}
@@ -101,7 +90,7 @@ func SerializeBool(data []byte, value bool, nullByte byte) []byte {
 
 // DeserializeBool deserializes a bool.
 func DeserializeBool(data []byte, nullByte byte) (bool, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 1)
 	if err != nil {
 		return false, nil, fmt.Errorf("missing data for bool")
 	}
@@ -122,7 +111,7 @@ func SerializeUint16(data []byte, value uint16, nullByte byte) []byte {
 
 // DeserializeUint16 deserializes a uint16.
 func DeserializeUint16(data []byte, nullByte byte) (uint16, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 2)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint16")
 	}
@@ -143,7 +132,7 @@ func SerializeUint32(data []byte, value uint32, nullByte byte) []byte {
 
 // DeserializeUint32 deserializes a uint32.
 func DeserializeUint32(data []byte, nullByte byte) (uint32, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 4)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint32")
 	}
@@ -164,7 +153,7 @@ func SerializeUint64(data []byte, value uint64, nullByte byte) []byte {
 
 // DeserializeUint64 deserializes a uint64.
 func DeserializeUint64(data []byte, nullByte byte) (uint64, []byte, error) {
-	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte)
+	currentBuffer, leftBuffer, err := SplitData[bool](data, PacketNullByte, 8)
 	if err != nil {
 		return 0, nil, fmt.Errorf("missing data for uint64")
 	}
