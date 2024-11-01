@@ -34,12 +34,17 @@ func (p *SamplePacket) GetType() uint64 {
 
 // Serialize serializes the packet.
 func (p *SamplePacket) Serialize() ([]byte, error) {
-	return []byte(p.Text), nil
+	data := SerializeString(nil, p.Text, PacketNullByte)
+	return data, nil
 }
 
 // Deserialize deserializes the packet.
 func (p *SamplePacket) Deserialize(data []byte) error {
-	p.Text = string(data)
+	var err error
+	p.Text, data, err = DeserializeString(data, PacketNullByte)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
