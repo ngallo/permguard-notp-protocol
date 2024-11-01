@@ -31,8 +31,9 @@ func SplitData[T any](data []byte, nullByte byte, expectedSize int) ([]byte, []b
 	}
 	currentData := data[:index]
 	leftData := data[index+1:]
-	if len(currentData) > expectedSize {
-		return nil, nil, fmt.Errorf("invalid data: missing or invalid header")
+	size := len(currentData)
+	if (size == 0 && expectedSize != 0) || len(currentData) > expectedSize {
+		return nil, nil, fmt.Errorf("invalid data: missing or invalid data")
 	}
 	return currentData, leftData, nil
 }
