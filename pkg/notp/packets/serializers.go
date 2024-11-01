@@ -49,7 +49,7 @@ func SerializeString(data []byte, value string, nullByte byte) []byte {
 	if data == nil {
 		data = make([]byte, 0)
 	}
-	data = append(data, []byte(value)...)
+	data = append(data, EncodeByteArray([]byte(value))...)
 	return append(data, nullByte)
 }
 
@@ -67,7 +67,7 @@ func SerializeBytes(data []byte, value []byte, nullByte byte) []byte {
 	if data == nil {
 		data = make([]byte, 0)
 	}
-	data = append(data, value...)
+	data = append(data, EncodeByteArray(value)...)
 	return append(data, nullByte)
 }
 
@@ -77,7 +77,7 @@ func DeserializeBytes(data []byte, nullByte byte) ([]byte, []byte, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("missing data for bytes")
 	}
-	return currentBuffer, leftBuffer, nil
+	return DecodeByteArray(currentBuffer), leftBuffer, nil
 }
 
 // SerializeBool serializes a bool.
