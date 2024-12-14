@@ -44,7 +44,7 @@ func (t *TransportLayer) TransmitPacket(packetables []notppackets.Packetable) er
 	if err != nil {
 		return err
 	}
-	writer.WriteProtocol(&notppackets.ProtocolPacket{ Version: 1 })
+	writer.WriteProtocol(&notppackets.ProtocolPacket{Version: 1})
 	for _, packetable := range packetables {
 		err := writer.AppendDataPacket(packetable)
 		if err != nil {

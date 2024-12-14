@@ -26,9 +26,9 @@ import (
 
 // InMemoryStream simulates an in-memory stream for packet transmission with a fixed timeout.
 type InMemoryStream struct {
-	packets   []notppackets.Packet
-	packetCh  chan notppackets.Packet
-	timeout   time.Duration
+	packets  []notppackets.Packet
+	packetCh chan notppackets.Packet
+	timeout  time.Duration
 }
 
 // TransmitPacket appends a packet to the in-memory stream.

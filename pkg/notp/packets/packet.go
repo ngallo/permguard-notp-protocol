@@ -68,14 +68,14 @@ func ConvertPacketable(packet Packetable, target Packetable) error {
 
 // CombineUint32toUint64 combines two uint32 into a uint64.
 func CombineUint32toUint64(high, low uint32) uint64 {
-    return (uint64(high) << 32) | uint64(low)
+	return (uint64(high) << 32) | uint64(low)
 }
 
 // SplitUint64toUint32 splits a uint64 into two uint32.
 func SplitUint64toUint32(value uint64) (uint32, uint32) {
-    high := uint32(value >> 32)
-    low := uint32(value & 0xFFFFFFFF)
-    return high, low
+	high := uint32(value >> 32)
+	low := uint32(value & 0xFFFFFFFF)
+	return high, low
 }
 
 // HasUint64AUint32 return

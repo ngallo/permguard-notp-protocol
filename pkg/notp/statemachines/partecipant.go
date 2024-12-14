@@ -79,7 +79,7 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 	ProcessNotifyObjectsStateID:  processNotifyObjectsState,
 	PublisherNegotiationStateID:  publisherNegotiationState,
 	PublisherDataStreamStateID:   publisherDataStreamState,
-	PublisherCommitStateID: 	  publisherCommitState,
+	PublisherCommitStateID:       publisherCommitState,
 	SubscriberNegotiationStateID: subscriberNegotiationState,
 	SubscriberDataStreamStateID:  subscriberDataStreamState,
 	SubscriberCommitStateID:      subscriberCommitState,
@@ -87,9 +87,9 @@ var defaultStateMap = map[uint16]StateTransitionFunc{
 
 // generateFlowID generates a flow ID.
 func generateFlowID() uint64 {
-    var n uint64
-    binary.Read(rand.Reader, binary.BigEndian, &n)
-    return n
+	var n uint64
+	binary.Read(rand.Reader, binary.BigEndian, &n)
+	return n
 }
 
 // terminateWithFinal terminates the state machine with a final state..
@@ -103,8 +103,8 @@ func terminateWithFinal(runtime *StateMachineRuntimeContext) (*StateTransitionIn
 // startFlowState state to start the flow.
 func startFlowState(runtime *StateMachineRuntimeContext) (*StateTransitionInfo, error) {
 	flowID := generateFlowID()
-	flowPacket := &notpsmpackets.StatePacket {
-		MessageCode: notpsmpackets.FlowIDValue,
+	flowPacket := &notpsmpackets.StatePacket{
+		MessageCode:  notpsmpackets.FlowIDValue,
 		MessageValue: flowID,
 	}
 	runtime.Set(FlowIDKey, flowID)
@@ -149,7 +149,7 @@ func processStartFlowState(runtime *StateMachineRuntimeContext) (*StateTransitio
 	if err != nil {
 		return nil, fmt.Errorf("notp: process start flow failed to receive and handle start flow packet: %w", err)
 	}
-	flowPacket := &notpsmpackets.StatePacket {}
+	flowPacket := &notpsmpackets.StatePacket{}
 	data, err := packetables[0].Serialize()
 	flowPacket.Deserialize(data)
 	if flowPacket.MessageCode != notpsmpackets.FlowIDValue {

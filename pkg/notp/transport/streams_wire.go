@@ -33,9 +33,9 @@ type WireRecvFunc func() (*notppackets.Packet, error)
 
 // WireStream wire stream.
 type WireStream struct {
-	sender	  WireSendFunc
-	receiver  WireRecvFunc
-	timeout   time.Duration
+	sender   WireSendFunc
+	receiver WireRecvFunc
+	timeout  time.Duration
 }
 
 // TransmitPacket appends a packet to the in-wire stream.

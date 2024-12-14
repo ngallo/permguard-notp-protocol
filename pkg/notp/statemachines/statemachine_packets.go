@@ -27,7 +27,7 @@ import (
 func createStatePacket(runtime *StateMachineRuntimeContext, messageCode uint16, messageValue uint64) (*notpsmpackets.StatePacket, *HandlerContext, error) {
 	handlerCtx := &HandlerContext{
 		flow:           runtime.GetFlowType(),
-		bag:			runtime.bag,
+		bag:            runtime.bag,
 		currentStateID: runtime.GetCurrentStateID(),
 	}
 	packet := &notpsmpackets.StatePacket{

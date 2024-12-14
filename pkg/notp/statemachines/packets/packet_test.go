@@ -27,9 +27,9 @@ func TestStatePacket(t *testing.T) {
 	assert := assert.New(t)
 
 	stateInput := &StatePacket{
-		MessageCode: 111,
+		MessageCode:  111,
 		MessageValue: 222,
-		ErrorCode: 333,
+		ErrorCode:    333,
 	}
 	data, err := stateInput.Serialize()
 	assert.NoError(err)
