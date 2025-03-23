@@ -20,7 +20,7 @@ package transport
 import (
 	"errors"
 
-	azfiles "github.com/permguard/permguard-core/pkg/extensions/files"
+	azdata "github.com/permguard/permguard-core/pkg/extensions/data"
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
@@ -51,7 +51,7 @@ func (t *TransportLayer) TransmitPacket(packetables []notppackets.Packetable) er
 			return err
 		}
 	}
-	compressedData, err := azfiles.CompressData(packet.Data)
+	compressedData, err := azdata.CompressData(packet.Data)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (t *TransportLayer) ReceivePacket() ([]notppackets.Packetable, error) {
 	if packet == nil {
 		return nil, errors.New("notp: received a nil packet")
 	}
-	decompressedData, err := azfiles.DecompressData(packet.Data)
+	decompressedData, err := azdata.DecompressData(packet.Data)
 	if err != nil {
 		return nil, err
 	}
