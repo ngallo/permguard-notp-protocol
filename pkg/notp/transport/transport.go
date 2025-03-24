@@ -20,7 +20,7 @@ package transport
 import (
 	"errors"
 
-	azdata "github.com/permguard/permguard-core/pkg/extensions/data"
+	azdata "github.com/permguard/permguard-common/pkg/extensions/data"
 	notppackets "github.com/permguard/permguard-notp-protocol/pkg/notp/packets"
 )
 
